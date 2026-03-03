@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const http = require('http');
+const https = require('https');
 
 const app = express();
 app.use(cors());
@@ -31,7 +31,7 @@ app.post('/webhook/url-check', (req, res) => {
     }
   };
 
-  const proxyReq = http.request(options, (proxyRes) => {
+  const proxyReq = https.request(options, (proxyRes) => {
     let body = '';
     proxyRes.on('data', chunk => body += chunk);
     proxyRes.on('end', () => {
