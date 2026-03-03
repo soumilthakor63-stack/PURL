@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PURL — Phishing URL Detector</title>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="style.css"/>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
   <div class="bg-grid"></div>
@@ -22,9 +26,11 @@
       <div class="logo-wrap">
         <div class="logo-hex">
           <svg viewBox="0 0 60 60" width="60" height="60">
-            <polygon points="30,2 55,16 55,44 30,58 5,44 5,16" fill="none" stroke="#00ff41" stroke-width="1.5"/>
-            <polygon points="30,8 50,19 50,41 30,52 10,41 10,19" fill="none" stroke="#00ff41" stroke-width="0.5" opacity="0.4"/>
-            <text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-family="Orbitron" font-size="14" font-weight="900" fill="#00ff41">P</text>
+            <polygon points="30,2 55,16 55,44 30,58 5,44 5,16" fill="none" stroke="#00ff41" stroke-width="1.5" />
+            <polygon points="30,8 50,19 50,41 30,52 10,41 10,19" fill="none" stroke="#00ff41" stroke-width="0.5"
+              opacity="0.4" />
+            <text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-family="Orbitron" font-size="14"
+              font-weight="900" fill="#00ff41">P</text>
           </svg>
         </div>
         <div>
@@ -39,7 +45,7 @@
         <span class="terminal-cursor">█</span>
       </div>
 
-      <h1>URL <span>THREAT</span><br/>ANALYZER</h1>
+      <h1>URL <span>THREAT</span><br />ANALYZER</h1>
       <div class="tags">
         <span class="tag">VIRUSTOTAL</span>
         <span class="tag">GOOGLE SAFE BROWSING</span>
@@ -57,7 +63,7 @@
         <span class="panel-status" id="statusLight">● READY</span>
       </div>
       <div class="input-row">
-        <input type="text" id="urlInput" placeholder="paste target url here..." autocomplete="off" spellcheck="false"/>
+        <input type="text" id="urlInput" placeholder="paste target url here..." autocomplete="off" spellcheck="false" />
         <button id="scanBtn" onclick="scanURL()">
           <span id="scanBtnText">SCAN</span>
           <span class="btn-arrow">▶</span>
@@ -76,10 +82,14 @@
         </div>
       </div>
       <div class="scan-steps">
-        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">Submitting to VirusTotal (94 engines)</span><span class="step-status pending" id="s1">PENDING</span></div>
-        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">Checking Google Safe Browsing</span><span class="step-status pending" id="s2">PENDING</span></div>
-        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">Running URLScan.io deep analysis</span><span class="step-status pending" id="s3">PENDING</span></div>
-        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">AI threat assessment via Groq</span><span class="step-status pending" id="s4">PENDING</span></div>
+        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">Submitting to VirusTotal (94
+            engines)</span><span class="step-status pending" id="s1">PENDING</span></div>
+        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">Checking Google Safe
+            Browsing</span><span class="step-status pending" id="s2">PENDING</span></div>
+        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">Running URLScan.io deep
+            analysis</span><span class="step-status pending" id="s3">PENDING</span></div>
+        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">AI threat assessment via
+            Groq</span><span class="step-status pending" id="s4">PENDING</span></div>
       </div>
     </div>
 
@@ -120,25 +130,33 @@
           <div class="stat-icon-big">🛡</div>
           <div class="stat-num" id="statHarmless">0</div>
           <div class="stat-name">HARMLESS</div>
-          <div class="stat-bar"><div class="stat-fill harmless" id="barHarmless"></div></div>
+          <div class="stat-bar">
+            <div class="stat-fill harmless" id="barHarmless"></div>
+          </div>
         </div>
         <div class="stat-card malicious">
           <div class="stat-icon-big">☠</div>
           <div class="stat-num" id="statMalicious">0</div>
           <div class="stat-name">MALICIOUS</div>
-          <div class="stat-bar"><div class="stat-fill malicious" id="barMalicious"></div></div>
+          <div class="stat-bar">
+            <div class="stat-fill malicious" id="barMalicious"></div>
+          </div>
         </div>
         <div class="stat-card suspicious">
           <div class="stat-icon-big">⚡</div>
           <div class="stat-num" id="statSuspicious">0</div>
           <div class="stat-name">SUSPICIOUS</div>
-          <div class="stat-bar"><div class="stat-fill suspicious" id="barSuspicious"></div></div>
+          <div class="stat-bar">
+            <div class="stat-fill suspicious" id="barSuspicious"></div>
+          </div>
         </div>
         <div class="stat-card undetected">
           <div class="stat-icon-big">◌</div>
           <div class="stat-num" id="statUndetected">0</div>
           <div class="stat-name">UNDETECTED</div>
-          <div class="stat-bar"><div class="stat-fill undetected" id="barUndetected"></div></div>
+          <div class="stat-bar">
+            <div class="stat-fill undetected" id="barUndetected"></div>
+          </div>
         </div>
       </div>
 
@@ -148,8 +166,10 @@
           <span class="info-title">// LIVE WEBSITE CAPTURE</span>
         </div>
         <div class="screenshot-wrap">
-          <div class="screenshot-loading" id="screenshotLoading"><div class="mini-spinner"></div><span>Fetching screenshot...</span></div>
-          <img class="screenshot-img" id="screenshotImg" style="display:none" alt="Website Screenshot"/>
+          <div class="screenshot-loading" id="screenshotLoading">
+            <div class="mini-spinner"></div><span>Fetching screenshot...</span>
+          </div>
+          <img class="screenshot-img" id="screenshotImg" style="display:none" alt="Website Screenshot" />
         </div>
       </div>
 
@@ -164,7 +184,8 @@
 
       <div class="meta-strip">
         <div class="meta-item"><span class="meta-key">ENGINES</span><span class="meta-val" id="scannedBy">—</span></div>
-        <div class="meta-item"><span class="meta-key">SCAN TIME</span><span class="meta-val" id="scanTime">—</span></div>
+        <div class="meta-item"><span class="meta-key">SCAN TIME</span><span class="meta-val" id="scanTime">—</span>
+        </div>
         <div class="meta-item"><span class="meta-key">STATUS</span><span class="meta-val green">COMPLETE</span></div>
       </div>
 
@@ -183,7 +204,7 @@
   </div>
 
   <script>
-    const N8N_WEBHOOK = 'https://equal-liquid-watt-sponsored.trycloudflare.com/webhook/url-check';
+    const N8N_WEBHOOK = '/webhook/url-check';
 
     const cmds = ['initialize_scan_engine --mode=deep', 'load_threat_database --sources=4', 'await_target_url...'];
     let cmdIndex = 0;
@@ -202,7 +223,7 @@
         const t = setTimeout(() => {
           document.getElementById(s.id).className = 'step-status running';
           document.getElementById(s.id).textContent = 'SCANNING';
-          if (i > 0) { document.getElementById(steps[i-1].id).className = 'step-status done'; document.getElementById(steps[i-1].id).textContent = 'DONE ✓'; }
+          if (i > 0) { document.getElementById(steps[i - 1].id).className = 'step-status done'; document.getElementById(steps[i - 1].id).textContent = 'DONE ✓'; }
         }, s.delay);
         stepTimers.push(t);
       });
@@ -211,7 +232,7 @@
     function clearStepTimers() {
       stepTimers.forEach(t => clearTimeout(t));
       stepTimers = [];
-      ['s1','s2','s3','s4'].forEach(id => { const el = document.getElementById(id); if (el) { el.className = 'step-status done'; el.textContent = 'DONE ✓'; } });
+      ['s1', 's2', 's3', 's4'].forEach(id => { const el = document.getElementById(id); if (el) { el.className = 'step-status done'; el.textContent = 'DONE ✓'; } });
     }
 
     async function scanURL() {
@@ -234,7 +255,7 @@
       const verdict = data.verdict || 'UNKNOWN';
       const risk = (data.risk_level || 'LOW').toLowerCase();
       const stats = data.stats || {};
-      const total = (stats.harmless||0) + (stats.malicious||0) + (stats.suspicious||0) + (stats.undetected||0);
+      const total = (stats.harmless || 0) + (stats.malicious || 0) + (stats.suspicious || 0) + (stats.undetected || 0);
 
       document.getElementById('verdictBanner').className = 'verdict-banner ' + verdict.toLowerCase();
       document.getElementById('verdictIcon').textContent = verdict === 'SAFE' ? '✓' : verdict === 'MALICIOUS' ? '✕' : '!';
@@ -248,10 +269,10 @@
 
       document.getElementById('verdictUrl').textContent = data.url || '';
 
-      [['statHarmless','barHarmless',stats.harmless||0],['statMalicious','barMalicious',stats.malicious||0],
-       ['statSuspicious','barSuspicious',stats.suspicious||0],['statUndetected','barUndetected',stats.undetected||0]].forEach(([sid, bid, val]) => {
+      [['statHarmless', 'barHarmless', stats.harmless || 0], ['statMalicious', 'barMalicious', stats.malicious || 0],
+      ['statSuspicious', 'barSuspicious', stats.suspicious || 0], ['statUndetected', 'barUndetected', stats.undetected || 0]].forEach(([sid, bid, val]) => {
         animateNumber(sid, val);
-        setTimeout(() => { document.getElementById(bid).style.width = (total > 0 ? val/total*100 : 0) + '%'; }, 400);
+        setTimeout(() => { document.getElementById(bid).style.width = (total > 0 ? val / total * 100 : 0) + '%'; }, 400);
       });
 
       if (data.screenshot) {
@@ -301,4 +322,5 @@
     document.getElementById('urlInput').addEventListener('keydown', e => { if (e.key === 'Enter') scanURL(); });
   </script>
 </body>
+
 </html>
