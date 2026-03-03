@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PURL — Phishing URL Detector</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <div class="bg-grid"></div>
+  <div class="bg-scanline"></div>
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <div class="container">
+
+    <header>
+      <div class="logo-wrap">
+        <div class="logo-hex">
+          <svg viewBox="0 0 60 60" width="60" height="60">
+            <polygon points="30,2 55,16 55,44 30,58 5,44 5,16" fill="none" stroke="#00ff41" stroke-width="1.5"/>
+            <polygon points="30,8 50,19 50,41 30,52 10,41 10,19" fill="none" stroke="#00ff41" stroke-width="0.5" opacity="0.4"/>
+            <text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-family="Orbitron" font-size="14" font-weight="900" fill="#00ff41">P</text>
+          </svg>
+        </div>
+        <div>
+          <div class="logo-text">PURL</div>
+          <div class="logo-sub">THREAT INTELLIGENCE SYSTEM</div>
+        </div>
+      </div>
+
+      <div class="terminal-line">
+        <span class="terminal-prompt">root@purl:~$</span>
+        <span class="terminal-cmd" id="termCmd">initialize_scan_engine --mode=deep --engines=94</span>
+        <span class="terminal-cursor">█</span>
+      </div>
+
+      <h1>URL <span>THREAT</span><br/>ANALYZER</h1>
+      <div class="tags">
+        <span class="tag">VIRUSTOTAL</span>
+        <span class="tag">GOOGLE SAFE BROWSING</span>
+        <span class="tag">URLSCAN.IO</span>
+        <span class="tag">GROQ AI</span>
+      </div>
+    </header>
+
+    <div class="scan-panel">
+      <div class="panel-header">
+        <span class="panel-dot red"></span>
+        <span class="panel-dot yellow"></span>
+        <span class="panel-dot green"></span>
+        <span class="panel-title">// TARGET URL INPUT</span>
+        <span class="panel-status" id="statusLight">● READY</span>
+      </div>
+      <div class="input-row">
+        <input type="text" id="urlInput" placeholder="paste target url here..." autocomplete="off" spellcheck="false"/>
+        <button id="scanBtn" onclick="scanURL()">
+          <span id="scanBtnText">SCAN</span>
+          <span class="btn-arrow">▶</span>
+        </button>
+      </div>
+      <div class="input-hint">// Supports any format — google.com, https://google.com, etc.</div>
+    </div>
+
+    <div class="loading-panel" id="loading">
+      <div class="radar-wrap">
+        <div class="radar">
+          <div class="radar-line"></div>
+          <div class="radar-dot" style="top:30%;left:60%"></div>
+          <div class="radar-dot" style="top:65%;left:35%"></div>
+          <div class="radar-dot blink" style="top:45%;left:50%"></div>
+        </div>
+      </div>
+      <div class="scan-steps">
+        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">Submitting to VirusTotal (94 engines)</span><span class="step-status pending" id="s1">PENDING</span></div>
+        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">Checking Google Safe Browsing</span><span class="step-status pending" id="s2">PENDING</span></div>
+        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">Running URLScan.io deep analysis</span><span class="step-status pending" id="s3">PENDING</span></div>
+        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">AI threat assessment via Groq</span><span class="step-status pending" id="s4">PENDING</span></div>
+      </div>
+    </div>
+
+    <div class="error-panel" id="error">
+      <span class="error-icon">⚠</span>
+      <span id="errorText"></span>
+    </div>
+
+    <div class="result" id="result">
+
+      <div class="verdict-banner" id="verdictBanner">
+        <div class="verdict-left">
+          <div class="verdict-badge" id="verdictBadge">
+            <div class="badge-ring"></div>
+            <span class="badge-icon" id="verdictIcon"></span>
+          </div>
+          <div>
+            <div class="verdict-label">THREAT STATUS</div>
+            <div class="verdict-title" id="verdictTitle"></div>
+          </div>
+        </div>
+        <div class="verdict-right">
+          <div class="risk-label" id="riskLabel"></div>
+          <div class="risk-bar-wrap">
+            <div class="risk-bar" id="riskBar"></div>
+          </div>
+          <div class="risk-sublabel">THREAT LEVEL</div>
+        </div>
+      </div>
+
+      <div class="url-panel">
+        <span class="url-label">▶ TARGET</span>
+        <span class="url-value" id="verdictUrl"></span>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card harmless">
+          <div class="stat-icon-big">🛡</div>
+          <div class="stat-num" id="statHarmless">0</div>
+          <div class="stat-name">HARMLESS</div>
+          <div class="stat-bar"><div class="stat-fill harmless" id="barHarmless"></div></div>
+        </div>
+        <div class="stat-card malicious">
+          <div class="stat-icon-big">☠</div>
+          <div class="stat-num" id="statMalicious">0</div>
+          <div class="stat-name">MALICIOUS</div>
+          <div class="stat-bar"><div class="stat-fill malicious" id="barMalicious"></div></div>
+        </div>
+        <div class="stat-card suspicious">
+          <div class="stat-icon-big">⚡</div>
+          <div class="stat-num" id="statSuspicious">0</div>
+          <div class="stat-name">SUSPICIOUS</div>
+          <div class="stat-bar"><div class="stat-fill suspicious" id="barSuspicious"></div></div>
+        </div>
+        <div class="stat-card undetected">
+          <div class="stat-icon-big">◌</div>
+          <div class="stat-num" id="statUndetected">0</div>
+          <div class="stat-name">UNDETECTED</div>
+          <div class="stat-bar"><div class="stat-fill undetected" id="barUndetected"></div></div>
+        </div>
+      </div>
+
+      <div class="info-panel" id="screenshotBox" style="display:none">
+        <div class="info-header">
+          <span class="info-tag">URLSCAN.IO</span>
+          <span class="info-title">// LIVE WEBSITE CAPTURE</span>
+        </div>
+        <div class="screenshot-wrap">
+          <div class="screenshot-loading" id="screenshotLoading"><div class="mini-spinner"></div><span>Fetching screenshot...</span></div>
+          <img class="screenshot-img" id="screenshotImg" style="display:none" alt="Website Screenshot"/>
+        </div>
+      </div>
+
+      <div class="info-panel ai-panel">
+        <div class="info-header">
+          <span class="info-tag groq">GROQ AI</span>
+          <span class="info-title">// THREAT INTELLIGENCE REPORT</span>
+          <span class="ai-model-badge">LLaMA 3.1</span>
+        </div>
+        <div class="ai-typing" id="aiText"></div>
+      </div>
+
+      <div class="meta-strip">
+        <div class="meta-item"><span class="meta-key">ENGINES</span><span class="meta-val" id="scannedBy">—</span></div>
+        <div class="meta-item"><span class="meta-key">SCAN TIME</span><span class="meta-val" id="scanTime">—</span></div>
+        <div class="meta-item"><span class="meta-key">STATUS</span><span class="meta-val green">COMPLETE</span></div>
+      </div>
+
+      <div class="rescan-row">
+        <button class="rescan-btn" onclick="resetForm()">◀ NEW SCAN</button>
+      </div>
+
+    </div>
+
+    <footer>
+      <span>PURL v1.0</span><span class="footer-sep">//</span>
+      <span>PHISHING URL DETECTION SYSTEM</span><span class="footer-sep">//</span>
+      <span>LOCAL ENGINE</span>
+    </footer>
+
+  </div>
+
+  <script>
+    const N8N_WEBHOOK = 'https://continuity-jokes-trusts-moderate.trycloudflare.com/webhook/url-check';
+
+    const cmds = ['initialize_scan_engine --mode=deep', 'load_threat_database --sources=4', 'await_target_url...'];
+    let cmdIndex = 0;
+    function cycleCmd() {
+      const el = document.getElementById('termCmd');
+      el.style.opacity = 0;
+      setTimeout(() => { cmdIndex = (cmdIndex + 1) % cmds.length; el.textContent = cmds[cmdIndex]; el.style.opacity = 1; }, 300);
+    }
+    setInterval(cycleCmd, 3000);
+
+    let stepTimers = [];
+    function startStepAnimation() {
+      const steps = [{ id: 's1', delay: 800 }, { id: 's2', delay: 3500 }, { id: 's3', delay: 7000 }, { id: 's4', delay: 13000 }];
+      steps.forEach(s => { const el = document.getElementById(s.id); el.className = 'step-status pending'; el.textContent = 'PENDING'; });
+      steps.forEach((s, i) => {
+        const t = setTimeout(() => {
+          document.getElementById(s.id).className = 'step-status running';
+          document.getElementById(s.id).textContent = 'SCANNING';
+          if (i > 0) { document.getElementById(steps[i-1].id).className = 'step-status done'; document.getElementById(steps[i-1].id).textContent = 'DONE ✓'; }
+        }, s.delay);
+        stepTimers.push(t);
+      });
+    }
+
+    function clearStepTimers() {
+      stepTimers.forEach(t => clearTimeout(t));
+      stepTimers = [];
+      ['s1','s2','s3','s4'].forEach(id => { const el = document.getElementById(id); if (el) { el.className = 'step-status done'; el.textContent = 'DONE ✓'; } });
+    }
+
+    async function scanURL() {
+      const input = document.getElementById('urlInput');
+      const url = input.value.trim();
+      if (!url) { showError('Please enter a URL to scan.'); return; }
+      setLoading(true); hideAll(); startStepAnimation();
+      try {
+        const res = await fetch(N8N_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        const data = await res.json();
+        const d = Array.isArray(data) ? data[0] : data;
+        clearStepTimers(); showResult(d);
+      } catch (err) {
+        clearStepTimers(); showError('Could not connect to scanner. Make sure n8n is running and the workflow is active.');
+      } finally { setLoading(false); }
+    }
+
+    function showResult(data) {
+      const verdict = data.verdict || 'UNKNOWN';
+      const risk = (data.risk_level || 'LOW').toLowerCase();
+      const stats = data.stats || {};
+      const total = (stats.harmless||0) + (stats.malicious||0) + (stats.suspicious||0) + (stats.undetected||0);
+
+      document.getElementById('verdictBanner').className = 'verdict-banner ' + verdict.toLowerCase();
+      document.getElementById('verdictIcon').textContent = verdict === 'SAFE' ? '✓' : verdict === 'MALICIOUS' ? '✕' : '!';
+      document.getElementById('verdictTitle').textContent = verdict;
+
+      const riskPct = risk === 'low' ? 15 : risk === 'medium' ? 55 : 95;
+      document.getElementById('riskBar').style.width = riskPct + '%';
+      document.getElementById('riskBar').className = 'risk-bar ' + risk;
+      document.getElementById('riskLabel').textContent = risk.toUpperCase();
+      document.getElementById('riskLabel').className = 'risk-label ' + risk;
+
+      document.getElementById('verdictUrl').textContent = data.url || '';
+
+      [['statHarmless','barHarmless',stats.harmless||0],['statMalicious','barMalicious',stats.malicious||0],
+       ['statSuspicious','barSuspicious',stats.suspicious||0],['statUndetected','barUndetected',stats.undetected||0]].forEach(([sid, bid, val]) => {
+        animateNumber(sid, val);
+        setTimeout(() => { document.getElementById(bid).style.width = (total > 0 ? val/total*100 : 0) + '%'; }, 400);
+      });
+
+      if (data.screenshot) {
+        const box = document.getElementById('screenshotBox');
+        const img = document.getElementById('screenshotImg');
+        const loading = document.getElementById('screenshotLoading');
+        box.style.display = 'block';
+        setTimeout(() => {
+          img.src = data.screenshot;
+          img.onload = () => { loading.style.display = 'none'; img.style.display = 'block'; };
+          img.onerror = () => { loading.innerHTML = '<span>⚠ Screenshot not ready. Rescan in 30s.</span>'; };
+        }, 3000);
+      }
+
+      const aiEl = document.getElementById('aiText');
+      const aiText = data.ai_analysis || 'No analysis available.';
+      aiEl.textContent = ''; let i = 0;
+      const typeTimer = setInterval(() => { aiEl.textContent += aiText[i]; i++; if (i >= aiText.length) clearInterval(typeTimer); }, 16);
+
+      document.getElementById('scannedBy').textContent = 'VirusTotal + Google SB + URLScan';
+      document.getElementById('scanTime').textContent = new Date().toLocaleTimeString();
+      document.getElementById('result').classList.add('active');
+    }
+
+    function animateNumber(id, target) {
+      const el = document.getElementById(id); let current = 0;
+      const step = Math.max(1, Math.ceil(target / 40));
+      const timer = setInterval(() => { current = Math.min(current + step, target); el.textContent = current; if (current >= target) clearInterval(timer); }, 25);
+    }
+
+    function showError(msg) { document.getElementById('errorText').textContent = msg; document.getElementById('error').classList.add('active'); }
+    function setLoading(state) {
+      document.getElementById('loading').classList.toggle('active', state);
+      document.getElementById('scanBtn').disabled = state;
+      document.getElementById('scanBtnText').textContent = state ? 'SCANNING' : 'SCAN';
+      document.getElementById('statusLight').textContent = state ? '● SCANNING' : '● READY';
+      document.getElementById('statusLight').className = state ? 'panel-status scanning' : 'panel-status';
+    }
+    function hideAll() {
+      document.getElementById('result').classList.remove('active');
+      document.getElementById('error').classList.remove('active');
+      document.getElementById('screenshotBox').style.display = 'none';
+      document.getElementById('screenshotImg').style.display = 'none';
+      document.getElementById('screenshotLoading').style.display = 'flex';
+    }
+    function resetForm() { hideAll(); document.getElementById('urlInput').value = ''; document.getElementById('urlInput').focus(); }
+    document.getElementById('urlInput').addEventListener('keydown', e => { if (e.key === 'Enter') scanURL(); });
+  </script>
+</body>
+</html>
