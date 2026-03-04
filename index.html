@@ -41,16 +41,17 @@
 
       <div class="terminal-line">
         <span class="terminal-prompt">root@purl:~$</span>
-        <span class="terminal-cmd" id="termCmd">initialize_scan_engine --mode=deep --engines=94</span>
+        <span class="terminal-cmd" id="termCmd"></span>
         <span class="terminal-cursor">█</span>
       </div>
 
       <h1>URL <span>THREAT</span><br />ANALYZER</h1>
-      <div class="tags">
-        <span class="tag">VIRUSTOTAL</span>
-        <span class="tag">GOOGLE SAFE BROWSING</span>
-        <span class="tag">URLSCAN.IO</span>
-        <span class="tag">GROQ AI</span>
+
+      <!-- Scrolling ticker replaces static tags -->
+      <div class="ticker-outer">
+        <div class="ticker-fade-left"></div>
+        <div class="ticker-fade-right"></div>
+        <div class="ticker-track" id="tickerTrack"></div>
       </div>
     </header>
 
@@ -59,7 +60,7 @@
         <span class="panel-dot red"></span>
         <span class="panel-dot yellow"></span>
         <span class="panel-dot green"></span>
-        <span class="panel-title">// TARGET URL INPUT</span>
+        <span class="panel-title">TARGET URL INPUT</span>
         <span class="panel-status" id="statusLight">● READY</span>
       </div>
       <div class="input-row">
@@ -69,7 +70,7 @@
           <span class="btn-arrow">▶</span>
         </button>
       </div>
-      <div class="input-hint">// Supports any format — google.com, https://google.com, etc.</div>
+      <div class="input-hint">Supports any format — google.com, https://google.com, etc.</div>
     </div>
 
     <div class="loading-panel" id="loading">
@@ -196,9 +197,11 @@
     </div>
 
     <footer>
-      <span>PURL v1.0</span><span class="footer-sep">//</span>
-      <span>PHISHING URL DETECTION SYSTEM</span><span class="footer-sep">//</span>
-      <span>LOCAL ENGINE</span>
+      <div class="credit-line">
+        <span class="credit-by">CRAFTED BY</span>
+        <span class="credit-name" id="creditName">SB</span>
+      </div>
+      <div class="credit-version">PURL v1.0 // PHISHING URL DETECTION SYSTEM</div>
     </footer>
 
   </div>
@@ -206,14 +209,68 @@
   <script>
     const N8N_WEBHOOK = '/webhook/url-check';
 
-    const cmds = ['initialize_scan_engine --mode=deep', 'load_threat_database --sources=4', 'await_target_url...'];
-    let cmdIndex = 0;
-    function cycleCmd() {
-      const el = document.getElementById('termCmd');
-      el.style.opacity = 0;
-      setTimeout(() => { cmdIndex = (cmdIndex + 1) % cmds.length; el.textContent = cmds[cmdIndex]; el.style.opacity = 1; }, 300);
+    // ── Glitch scramble terminal ──
+    const GLITCH_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*/<>[]{}';
+    const termMsgs = [
+      'initialize_scan_engine --deep',
+      'load_threat_database --sources=4',
+      'run_heuristic_analysis --deep',
+      'await_target_url...',
+      'check_blacklist --engines=94',
+      'ai_assessment --model=llama',
+    ];
+    let termIdx = 0;
+    const termEl = document.getElementById('termCmd');
+
+    function glitchScramble(target, onDone) {
+      let iter = 0;
+      const max = target.length * 3.2;
+      const iv = setInterval(() => {
+        termEl.textContent = target.split('').map((ch, i) => {
+          if (i < iter / 3.2) return ch;
+          return ch === ' ' ? ' ' : GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)];
+        }).join('');
+        iter++;
+        if (iter > max) {
+          clearInterval(iv);
+          termEl.textContent = target;
+          if (onDone) onDone();
+        }
+      }, 32);
     }
-    setInterval(cycleCmd, 3000);
+
+    function cycleGlitch() {
+      glitchScramble(termMsgs[termIdx], () => {
+        termIdx = (termIdx + 1) % termMsgs.length;
+        setTimeout(cycleGlitch, 2600);
+      });
+    }
+    setTimeout(cycleGlitch, 600);
+
+    // ── Scrolling ticker ──
+    const tickItems = [
+      { cls: 'ticker-green',  txt: '● VT: 94 ENGINES' },
+      { cls: 'ticker-muted',  txt: '◆ GOOGLE SB: OK' },
+      { cls: 'ticker-cyan',   txt: '◈ URLSCAN: READY' },
+      { cls: 'ticker-green',  txt: '● GROQ AI: ONLINE' },
+      { cls: 'ticker-yellow', txt: '⚡ THREAT DB: LIVE' },
+      { cls: 'ticker-muted',  txt: '◆ LATENCY: 38MS' },
+      { cls: 'ticker-cyan',   txt: '◈ DEEP SCAN: ON' },
+      { cls: 'ticker-green',  txt: '● STATUS: NOMINAL' },
+    ];
+    const track = document.getElementById('tickerTrack');
+    if (track) {
+      [...tickItems, ...tickItems].forEach(t => {
+        const span = document.createElement('span');
+        span.className = 'ticker-item ' + t.cls;
+        span.textContent = t.txt;
+        track.appendChild(span);
+        const sep = document.createElement('span');
+        sep.className = 'ticker-sep';
+        sep.textContent = ' // ';
+        track.appendChild(sep);
+      });
+    }
 
     let stepTimers = [];
     function startStepAnimation() {
