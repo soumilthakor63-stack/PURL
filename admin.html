@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>PURL ◈ ADMIN PANEL</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { background: #060a0f; color: #c9d1d9; font-family: 'Share Tech Mono', monospace; min-height: 100vh; }
+
+    /* ── Login Gate ───────────────────────────────────────────────── */
+    #loginGate {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; gap: 20px;
+    }
+    #loginGate h1 { font-family: 'Orbitron', monospace; color: #00ff41; font-size: 28px; letter-spacing: 4px; }
+    #loginGate p  { color: #555; font-size: 13px; }
+    .login-box {
+      background: #0d1117; border: 1px solid #00ff41; border-radius: 8px;
+      padding: 36px 40px; display: flex; flex-direction: column; gap: 16px; width: 360px;
+    }
+    .login-box input[type="password"] {
+      background: #060a0f; border: 1px solid #333; color: #00ff41;
+      font-family: 'Share Tech Mono', monospace; font-size: 15px;
+      padding: 10px 14px; border-radius: 4px; width: 100%; outline: none;
+    }
+    .login-box input[type="password"]:focus { border-color: #00ff41; }
+    .login-box button {
+      background: #00ff41; color: #060a0f; font-family: 'Orbitron', monospace;
+      font-size: 14px; font-weight: 700; border: none; border-radius: 4px;
+      padding: 11px; cursor: pointer; letter-spacing: 2px;
+    }
+    .login-box button:hover { background: #00cc33; }
+    #loginError { color: #ff4444; font-size: 12px; text-align: center; display: none; }
+
+    /* ── Main Panel ───────────────────────────────────────────────── */
+    #adminPanel { display: none; padding: 24px 28px; max-width: 1400px; margin: 0 auto; }
+
+    .top-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid #00ff41; padding-bottom: 16px; margin-bottom: 24px;
+    }
+    .top-bar h1 { font-family: 'Orbitron', monospace; color: #00ff41; font-size: 22px; letter-spacing: 3px; }
+    .top-bar span { font-size: 12px; color: #555; }
+    .logout-btn {
+      background: transparent; border: 1px solid #ff4444; color: #ff4444;
+      font-family: 'Share Tech Mono', monospace; font-size: 12px; padding: 6px 14px;
+      border-radius: 4px; cursor: pointer;
+    }
+    .logout-btn:hover { background: #ff4444; color: #000; }
+
+    /* ── Stats Row ────────────────────────────────────────────────── */
+    .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 28px; }
+    .stat-box {
+      background: #0d1117; border: 1px solid #1a2332; border-radius: 8px;
+      padding: 18px 20px; text-align: center;
+    }
+    .stat-box .num { font-family: 'Orbitron', monospace; font-size: 28px; font-weight: 700; }
+    .stat-box .lbl { font-size: 11px; color: #555; margin-top: 4px; letter-spacing: 1px; }
+    .stat-box.total .num  { color: #00ff41; }
+    .stat-box.mal .num    { color: #ff4444; }
+    .stat-box.safe .num   { color: #00ff41; }
+    .stat-box.cached .num { color: #ff9900; }
+    .stat-box.users .num  { color: #4fc3f7; }
+
+    /* ── Filter bar ───────────────────────────────────────────────── */
+    .filter-bar {
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+      background: #0d1117; border: 1px solid #1a2332; border-radius: 8px;
+      padding: 14px 16px; margin-bottom: 20px;
+    }
+    .filter-bar input, .filter-bar select {
+      background: #060a0f; border: 1px solid #333; color: #c9d1d9;
+      font-family: 'Share Tech Mono', monospace; font-size: 13px;
+      padding: 7px 12px; border-radius: 4px; outline: none;
+    }
+    .filter-bar input { flex: 1; min-width: 180px; }
+    .filter-bar input:focus, .filter-bar select:focus { border-color: #00ff41; }
+    .filter-btn {
+      background: #00ff41; color: #060a0f; font-family: 'Share Tech Mono', monospace;
+      font-size: 13px; border: none; border-radius: 4px; padding: 7px 18px; cursor: pointer;
+    }
+    .filter-btn:hover { background: #00cc33; }
+    .reset-btn {
+      background: transparent; border: 1px solid #555; color: #555;
+      font-family: 'Share Tech Mono', monospace; font-size: 13px;
+      border-radius: 4px; padding: 7px 14px; cursor: pointer;
+    }
+    .reset-btn:hover { border-color: #c9d1d9; color: #c9d1d9; }
+
+    /* ── Table ────────────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; border: 1px solid #1a2332; border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead { background: #0d1117; }
+    thead th {
+      padding: 12px 14px; text-align: left; color: #555; font-weight: 400;
+      letter-spacing: 1px; font-size: 11px; border-bottom: 1px solid #1a2332;
+      white-space: nowrap;
+    }
+    tbody tr { border-bottom: 1px solid #0d1117; transition: background .15s; }
+    tbody tr:hover { background: #0d1117; }
+    tbody td { padding: 11px 14px; vertical-align: middle; }
+    .url-cell { max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #c9d1d9; }
+    .user-cell { max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #555; font-size: 11px; }
+
+    /* verdict badges */
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 3px;
+      font-size: 11px; font-weight: bold; letter-spacing: 1px;
+    }
+    .badge.safe     { background: #0d2e16; color: #00ff41; border: 1px solid #00ff41; }
+    .badge.malicious { background: #2e0d0d; color: #ff4444; border: 1px solid #ff4444; }
+    .badge.suspicious { background: #2e2200; color: #ff9900; border: 1px solid #ff9900; }
+    .badge.unknown  { background: #1a1a2e; color: #888; border: 1px solid #333; }
+    .cached-tag { color: #ff9900; font-size: 10px; }
+
+    /* action buttons */
+    .act-btn {
+      background: transparent; font-family: 'Share Tech Mono', monospace;
+      font-size: 12px; padding: 4px 10px; border-radius: 3px; cursor: pointer;
+    }
+    .act-btn.edit   { border: 1px solid #4fc3f7; color: #4fc3f7; }
+    .act-btn.edit:hover { background: #4fc3f7; color: #000; }
+    .act-btn.del    { border: 1px solid #ff4444; color: #ff4444; margin-left: 6px; }
+    .act-btn.del:hover { background: #ff4444; color: #000; }
+
+    /* ── Pagination ───────────────────────────────────────────────── */
+    .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
+    .page-btn {
+      background: #0d1117; border: 1px solid #1a2332; color: #555;
+      font-family: 'Share Tech Mono', monospace; font-size: 13px;
+      padding: 6px 14px; border-radius: 4px; cursor: pointer;
+    }
+    .page-btn:hover, .page-btn.active { border-color: #00ff41; color: #00ff41; }
+
+    /* ── Modal ────────────────────────────────────────────────────── */
+    #modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.85); z-index: 100;
+      align-items: center; justify-content: center;
+    }
+    #modal.open { display: flex; }
+    .modal-box {
+      background: #0d1117; border: 1px solid #00ff41; border-radius: 10px;
+      padding: 32px 36px; width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+    }
+    .modal-box h3 { color: #00ff41; font-family: 'Orbitron',monospace; font-size: 16px; margin-bottom: 22px; letter-spacing: 2px; }
+    .form-row { margin-bottom: 14px; }
+    .form-row label { display: block; font-size: 11px; color: #555; margin-bottom: 5px; letter-spacing: 1px; }
+    .form-row input, .form-row select, .form-row textarea {
+      width: 100%; background: #060a0f; border: 1px solid #333; color: #c9d1d9;
+      font-family: 'Share Tech Mono', monospace; font-size: 13px;
+      padding: 8px 12px; border-radius: 4px; outline: none;
+    }
+    .form-row textarea { resize: vertical; min-height: 80px; }
+    .form-row input:focus, .form-row select:focus, .form-row textarea:focus { border-color: #00ff41; }
+    .modal-actions { display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end; }
+    .save-btn {
+      background: #00ff41; color: #000; font-family: 'Share Tech Mono', monospace;
+      font-size: 13px; border: none; border-radius: 4px; padding: 9px 22px; cursor: pointer;
+    }
+    .save-btn:hover { background: #00cc33; }
+    .cancel-btn {
+      background: transparent; border: 1px solid #555; color: #555;
+      font-family: 'Share Tech Mono', monospace; font-size: 13px;
+      border-radius: 4px; padding: 9px 18px; cursor: pointer;
+    }
+    .cancel-btn:hover { border-color: #c9d1d9; color: #c9d1d9; }
+
+    /* ── Toast ────────────────────────────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 28px; right: 28px; z-index: 200;
+      background: #0d1117; border: 1px solid #00ff41; color: #00ff41;
+      font-family: 'Share Tech Mono', monospace; font-size: 13px;
+      padding: 12px 22px; border-radius: 6px; display: none;
+      animation: fadeIn .3s ease;
+    }
+    #toast.error { border-color: #ff4444; color: #ff4444; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+    .empty-row td { text-align: center; padding: 40px; color: #333; }
+    .info-line { font-size: 11px; color: #555; }
+  </style>
+</head>
+<body>
+
+<!-- ── LOGIN GATE ──────────────────────────────────────────────────── -->
+<div id="loginGate">
+  <h1>◈ ADMIN</h1>
+  <p>PURL Threat Intelligence System — Admin Access</p>
+  <div class="login-box">
+    <div style="font-size:12px;color:#555;letter-spacing:1px;">ENTER ADMIN PASSWORD</div>
+    <input type="password" id="pwInput" placeholder="password" autocomplete="off"/>
+    <button onclick="doLogin()">ACCESS PANEL</button>
+    <div id="loginError">⚠ Incorrect password</div>
+  </div>
+</div>
+
+<!-- ── ADMIN PANEL ─────────────────────────────────────────────────── -->
+<div id="adminPanel">
+
+  <div class="top-bar">
+    <div>
+      <h1>PURL ◈ ADMIN PANEL</h1>
+      <div style="font-size:11px;color:#555;margin-top:4px;">Scan History Management &amp; CRUD</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <span id="lastRefresh" class="info-line"></span>
+      <button class="logout-btn" onclick="logout()">LOGOUT</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-box total"><div class="num" id="statTotal">—</div><div class="lbl">TOTAL SCANS</div></div>
+    <div class="stat-box mal">  <div class="num" id="statMal">—</div><div class="lbl">MALICIOUS</div></div>
+    <div class="stat-box safe"> <div class="num" id="statSafe">—</div><div class="lbl">SAFE</div></div>
+    <div class="stat-box cached"><div class="num" id="statCached">—</div><div class="lbl">CACHED</div></div>
+    <div class="stat-box users"><div class="num" id="statUsers">—</div><div class="lbl">UNIQUE USERS</div></div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-bar">
+    <input type="text" id="fSearch" placeholder="Search URL..." onkeydown="if(event.key==='Enter') applyFilter()"/>
+    <select id="fVerdict">
+      <option value="">All Verdicts</option>
+      <option>SAFE</option><option>MALICIOUS</option><option>SUSPICIOUS</option><option>ERROR</option>
+    </select>
+    <select id="fRisk">
+      <option value="">All Risk Levels</option>
+      <option>LOW</option><option>MEDIUM</option><option>HIGH</option>
+    </select>
+    <input type="text" id="fUser" placeholder="Filter by user_id..." style="max-width:220px;"/>
+    <button class="filter-btn" onclick="applyFilter()">FILTER</button>
+    <button class="reset-btn" onclick="resetFilter()">RESET</button>
+    <div style="margin-left:auto;font-size:12px;color:#555;" id="resultCount"></div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>URL</th>
+          <th>VERDICT</th>
+          <th>RISK</th>
+          <th>STATS</th>
+          <th>USER ID</th>
+          <th>TIMESTAMP</th>
+          <th>ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody id="scanTable">
+        <tr class="empty-row"><td colspan="8">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" id="pagination"></div>
+
+</div>
+
+<!-- ── EDIT MODAL ──────────────────────────────────────────────────── -->
+<div id="modal">
+  <div class="modal-box">
+    <h3 id="modalTitle">◈ EDIT SCAN</h3>
+    <div class="form-row"><label>URL</label><input type="text" id="eUrl"/></div>
+    <div class="form-row"><label>VERDICT</label>
+      <select id="eVerdict">
+        <option>SAFE</option><option>MALICIOUS</option><option>SUSPICIOUS</option><option>ERROR</option><option>UNKNOWN</option>
+      </select>
+    </div>
+    <div class="form-row"><label>RISK LEVEL</label>
+      <select id="eRisk"><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>UNKNOWN</option></select>
+    </div>
+    <div class="form-row">
+      <label>STATS (harmless / malicious / suspicious / undetected)</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;">
+        <input type="number" id="eHarmless" placeholder="harmless"/>
+        <input type="number" id="eMalicious" placeholder="malicious"/>
+        <input type="number" id="eSuspicious" placeholder="suspicious"/>
+        <input type="number" id="eUndetected" placeholder="undetected"/>
+      </div>
+    </div>
+    <div class="form-row"><label>AI ANALYSIS</label><textarea id="eAI"></textarea></div>
+    <div class="modal-actions">
+      <button class="cancel-btn" onclick="closeModal()">CANCEL</button>
+      <button class="save-btn" onclick="saveEdit()">SAVE</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  let ADMIN_TOKEN = '';
+  let currentPage = 1;
+  let currentFilter = {};
+  let editingId = null;
+  const LIMIT = 20;
+
+  // ── Login ──────────────────────────────────────────────────────────────
+  document.getElementById('pwInput').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
+
+  async function doLogin() {
+    const pw = document.getElementById('pwInput').value.trim();
+    if (!pw) return;
+    try {
+      const res  = await fetch('/admin/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token:pw}) });
+      const data = await res.json();
+      if (data.ok) {
+        ADMIN_TOKEN = pw;
+        document.getElementById('loginGate').style.display  = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+        loadStats();
+        loadScans();
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    } catch(e) { showToast('Connection error', true); }
+  }
+
+  function logout() {
+    ADMIN_TOKEN = '';
+    document.getElementById('loginGate').style.display  = 'flex';
+    document.getElementById('adminPanel').style.display = 'none';
+    document.getElementById('pwInput').value = '';
+  }
+
+  function authHeader() { return { 'Content-Type':'application/json', 'x-admin-token': ADMIN_TOKEN }; }
+
+  // ── Stats ──────────────────────────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const res  = await fetch('/admin/stats', { headers: authHeader() });
+      const data = await res.json();
+      document.getElementById('statTotal').textContent  = data.total  || 0;
+      document.getElementById('statMal').textContent    = data.malicious || 0;
+      document.getElementById('statSafe').textContent   = data.safe   || 0;
+      document.getElementById('statCached').textContent = data.cached || 0;
+      document.getElementById('statUsers').textContent  = data.unique_users || 0;
+      document.getElementById('lastRefresh').textContent = 'Last refresh: ' + new Date().toLocaleTimeString();
+    } catch(e) {}
+  }
+
+  // ── Load scans ─────────────────────────────────────────────────────────
+  async function loadScans(page) {
+    page = page || currentPage;
+    currentPage = page;
+    const params = new URLSearchParams({ page, limit: LIMIT, ...currentFilter });
+    try {
+      const res  = await fetch('/admin/scans?' + params, { headers: authHeader() });
+      const data = await res.json();
+      renderTable(data.scans || [], data.total || 0);
+      renderPagination(data.pages || 1);
+      document.getElementById('resultCount').textContent = (data.total||0) + ' records';
+    } catch(e) { showToast('Failed to load scans', true); }
+  }
+
+  function renderTable(scans, total) {
+    const tbody = document.getElementById('scanTable');
+    if (!scans.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No records found</td></tr>';
+      return;
+    }
+    tbody.innerHTML = scans.map((s, i) => {
+      const vClass  = (s.verdict||'unknown').toLowerCase();
+      const ts      = new Date(s.timestamp).toLocaleString();
+      const cached  = s.from_cache ? ' <span class="cached-tag">[CACHED]</span>' : '';
+      const stats   = s.stats || {};
+      return `<tr>
+        <td style="color:#555;font-size:11px;">${(currentPage-1)*LIMIT + i + 1}</td>
+        <td><div class="url-cell" title="${esc(s.url)}">${esc(s.url)}</div>${cached}</td>
+        <td><span class="badge ${vClass}">${s.verdict||'—'}</span></td>
+        <td><span style="color:${vClass==='safe'?'#00ff41':vClass==='malicious'?'#ff4444':'#ff9900'};font-size:13px;">${s.risk_level||'—'}</span></td>
+        <td style="font-size:11px;color:#555;">
+          <span style="color:#ff4444;">${stats.malicious||0}M</span> /
+          <span style="color:#ff9900;">${stats.suspicious||0}S</span> /
+          <span style="color:#00ff41;">${stats.harmless||0}H</span>
+        </td>
+        <td><div class="user-cell" title="${esc(s.user_id)}">${esc(s.user_id||'—')}</div></td>
+        <td style="font-size:11px;color:#555;white-space:nowrap;">${ts}</td>
+        <td style="white-space:nowrap;">
+          <button class="act-btn edit" onclick="openEdit('${s._id}')">EDIT</button>
+          <button class="act-btn del"  onclick="deleteScan('${s._id}', '${esc(s.url)}')">DEL</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderPagination(pages) {
+    const el = document.getElementById('pagination');
+    if (pages <= 1) { el.innerHTML=''; return; }
+    let html = '';
+    if (currentPage > 1) html += `<button class="page-btn" onclick="loadScans(${currentPage-1})">◀ PREV</button>`;
+    for (let p=Math.max(1,currentPage-2); p<=Math.min(pages,currentPage+2); p++) {
+      html += `<button class="page-btn${p===currentPage?' active':''}" onclick="loadScans(${p})">${p}</button>`;
+    }
+    if (currentPage < pages) html += `<button class="page-btn" onclick="loadScans(${currentPage+1})">NEXT ▶</button>`;
+    el.innerHTML = html;
+  }
+
+  // ── Filters ────────────────────────────────────────────────────────────
+  function applyFilter() {
+    currentFilter = {};
+    const s = document.getElementById('fSearch').value.trim();
+    const v = document.getElementById('fVerdict').value;
+    const r = document.getElementById('fRisk').value;
+    const u = document.getElementById('fUser').value.trim();
+    if (s) currentFilter.search     = s;
+    if (v) currentFilter.verdict    = v;
+    if (r) currentFilter.risk_level = r;
+    if (u) currentFilter.user_id    = u;
+    loadScans(1);
+  }
+  function resetFilter() {
+    document.getElementById('fSearch').value = '';
+    document.getElementById('fVerdict').value = '';
+    document.getElementById('fRisk').value = '';
+    document.getElementById('fUser').value = '';
+    currentFilter = {};
+    loadScans(1);
+  }
+
+  // ── Edit ───────────────────────────────────────────────────────────────
+  async function openEdit(id) {
+    try {
+      const res  = await fetch('/admin/scans/'+id, { headers: authHeader() });
+      const scan = await res.json();
+      editingId = id;
+      document.getElementById('eUrl').value      = scan.url || '';
+      document.getElementById('eVerdict').value  = scan.verdict || 'UNKNOWN';
+      document.getElementById('eRisk').value     = scan.risk_level || 'LOW';
+      document.getElementById('eHarmless').value   = (scan.stats||{}).harmless   || 0;
+      document.getElementById('eMalicious').value  = (scan.stats||{}).malicious  || 0;
+      document.getElementById('eSuspicious').value = (scan.stats||{}).suspicious || 0;
+      document.getElementById('eUndetected').value = (scan.stats||{}).undetected || 0;
+      document.getElementById('eAI').value       = scan.ai_analysis || '';
+      document.getElementById('modal').classList.add('open');
+    } catch(e) { showToast('Failed to load scan', true); }
+  }
+
+  async function saveEdit() {
+    if (!editingId) return;
+    const body = {
+      url:        document.getElementById('eUrl').value,
+      verdict:    document.getElementById('eVerdict').value,
+      risk_level: document.getElementById('eRisk').value,
+      stats: {
+        harmless:   parseInt(document.getElementById('eHarmless').value)||0,
+        malicious:  parseInt(document.getElementById('eMalicious').value)||0,
+        suspicious: parseInt(document.getElementById('eSuspicious').value)||0,
+        undetected: parseInt(document.getElementById('eUndetected').value)||0
+      },
+      ai_analysis: document.getElementById('eAI').value
+    };
+    try {
+      const res = await fetch('/admin/scans/'+editingId, { method:'PUT', headers: authHeader(), body: JSON.stringify(body) });
+      if (!res.ok) throw new Error();
+      closeModal();
+      showToast('✓ Scan updated');
+      loadScans(); loadStats();
+    } catch(e) { showToast('Failed to update', true); }
+  }
+
+  // ── Delete ─────────────────────────────────────────────────────────────
+  async function deleteScan(id, url) {
+    if (!confirm('Delete scan for:\n' + url + '\n\nThis cannot be undone.')) return;
+    try {
+      const res = await fetch('/admin/scans/'+id, { method:'DELETE', headers: authHeader() });
+      if (!res.ok) throw new Error();
+      showToast('✓ Scan deleted');
+      loadScans(); loadStats();
+    } catch(e) { showToast('Failed to delete', true); }
+  }
+
+  // ── Modal ──────────────────────────────────────────────────────────────
+  function closeModal() { document.getElementById('modal').classList.remove('open'); editingId=null; }
+  document.getElementById('modal').addEventListener('click', e => { if(e.target===document.getElementById('modal')) closeModal(); });
+
+  // ── Toast ──────────────────────────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg, isError) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className   = isError ? 'error' : '';
+    t.style.display = 'block';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.style.display='none'; }, 3000);
+  }
+
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // Auto-refresh stats every 30s
+  setInterval(() => { if (ADMIN_TOKEN) loadStats(); }, 30000);
+</script>
+</body>
+</html>

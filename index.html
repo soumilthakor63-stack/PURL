@@ -9,6 +9,30 @@
     href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;700&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .history-panel { margin-top: 28px; background: #0a0e13; border: 1px solid #1a2332; border-radius: 10px; overflow: hidden; }
+    .history-header { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-bottom: 1px solid #1a2332; background: #0d1117; }
+    .history-title { font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 2px; color: #00ff41; margin-left: 4px; }
+    .history-count { margin-left: auto; font-size: 11px; color: #444; font-family: 'Share Tech Mono', monospace; }
+    .history-list { max-height: 340px; overflow-y: auto; }
+    .history-list::-webkit-scrollbar { width: 4px; }
+    .history-list::-webkit-scrollbar-track { background: #0d1117; }
+    .history-list::-webkit-scrollbar-thumb { background: #1a2332; border-radius: 2px; }
+    .history-item { display: flex; align-items: center; gap: 14px; padding: 11px 18px; border-bottom: 1px solid #0d1117; cursor: pointer; transition: background .15s; }
+    .history-item:last-child { border-bottom: none; }
+    .history-item:hover { background: #0d1117; }
+    .h-dot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0; }
+    .h-dot.safe      { background:#0d2e16; color:#00ff41; border:1px solid #00ff41; }
+    .h-dot.malicious { background:#2e0d0d; color:#ff4444; border:1px solid #ff4444; }
+    .h-dot.unknown   { background:#1a1a2e; color:#888;    border:1px solid #333; }
+    .h-url { flex:1; min-width:0; font-family:'Share Tech Mono',monospace; font-size:12px; color:#c9d1d9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .h-meta { font-size:10px; color:#444; margin-top:3px; font-family:'Share Tech Mono',monospace; }
+    .h-risk { font-size:11px; font-family:'Share Tech Mono',monospace; flex-shrink:0; }
+    .h-risk.low    { color:#00ff41; }
+    .h-risk.medium { color:#ff9900; }
+    .h-risk.high   { color:#ff4444; }
+    .history-empty { text-align:center; padding:32px; color:#333; font-family:'Share Tech Mono',monospace; font-size:13px; }
+  </style>
 </head>
 
 <body>
@@ -164,7 +188,7 @@
       <div class="info-panel" id="screenshotBox" style="display:none">
         <div class="info-header">
           <span class="info-tag">URLSCAN.IO</span>
-          <span class="info-title">// LIVE WEBSITE CAPTURE</span>
+          <span class="info-title">◈ LIVE WEBSITE CAPTURE</span>
         </div>
         <div class="screenshot-wrap">
           <div class="screenshot-loading" id="screenshotLoading">
@@ -177,7 +201,7 @@
       <div class="info-panel ai-panel">
         <div class="info-header">
           <span class="info-tag groq">GROQ AI</span>
-          <span class="info-title">// THREAT INTELLIGENCE REPORT</span>
+          <span class="info-title">◈ THREAT INTELLIGENCE REPORT</span>
           <span class="ai-model-badge">LLaMA 3.1</span>
         </div>
         <div class="ai-typing" id="aiText"></div>
@@ -196,18 +220,41 @@
 
     </div>
 
+    <!-- ── SCAN HISTORY ──────────────────────────────────────────────────── -->
+    <div class="history-panel" id="historyPanel" style="display:none;">
+      <div class="history-header">
+        <span class="panel-dot red"></span>
+        <span class="panel-dot yellow"></span>
+        <span class="panel-dot green"></span>
+        <span class="history-title">SCAN HISTORY</span>
+        <span class="history-count" id="historyCount"></span>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="history-empty">No scans yet.</div>
+      </div>
+    </div>
+
     <footer>
       <div class="credit-line">
         <span class="credit-by">CRAFTED BY</span>
         <span class="credit-name" id="creditName">SB</span>
       </div>
-      <div class="credit-version">PURL v1.0 // PHISHING URL DETECTION SYSTEM</div>
+      <div class="credit-version">PURL v1.0 &nbsp;·&nbsp; PHISHING URL DETECTION SYSTEM</div>
     </footer>
 
   </div>
 
   <script>
-    const N8N_WEBHOOK = '/webhook/url-check';
+    // ── User identity ─────────────────────────────────────────────
+    function getUserId() {
+      let id = localStorage.getItem('purl_user_id');
+      if (!id) {
+        id = 'u_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
+        localStorage.setItem('purl_user_id', id);
+      }
+      return id;
+    }
+    const USER_ID = getUserId();
 
     // ── Glitch scramble terminal ──
     const GLITCH_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*/<>[]{}';
@@ -267,7 +314,7 @@
         track.appendChild(span);
         const sep = document.createElement('span');
         sep.className = 'ticker-sep';
-        sep.textContent = ' // ';
+        sep.textContent = ' ◆ ';
         track.appendChild(sep);
       });
     }
@@ -298,13 +345,20 @@
       if (!url) { showError('Please enter a URL to scan.'); return; }
       setLoading(true); hideAll(); startStepAnimation();
       try {
-        const res = await fetch(N8N_WEBHOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
-        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        const res = await fetch('/webhook/url-check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: url, user_id: USER_ID })
+        });
+        if (!res.ok) throw new Error('Server error: ' + res.status);
         const data = await res.json();
         const d = Array.isArray(data) ? data[0] : data;
-        clearStepTimers(); showResult(d);
+        clearStepTimers();
+        showResult(d);
+        loadHistory();
       } catch (err) {
-        clearStepTimers(); showError('Could not connect to scanner. Make sure n8n is running and the workflow is active.');
+        clearStepTimers();
+        showError('Could not connect to scanner. Make sure n8n is running and the workflow is active.');
       } finally { setLoading(false); }
     }
 
@@ -377,6 +431,42 @@
     }
     function resetForm() { hideAll(); document.getElementById('urlInput').value = ''; document.getElementById('urlInput').focus(); }
     document.getElementById('urlInput').addEventListener('keydown', e => { if (e.key === 'Enter') scanURL(); });
+    // ── History ───────────────────────────────────────────────────────────
+    async function loadHistory() {
+      const panel = document.getElementById('historyPanel');
+      const list  = document.getElementById('historyList');
+      try {
+        const res  = await fetch('/history?user_id=' + encodeURIComponent(USER_ID));
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) { panel.style.display = 'none'; return; }
+        panel.style.display = 'block';
+        document.getElementById('historyCount').textContent = data.length + (data.length !== 1 ? ' scans' : ' scan');
+        list.innerHTML = data.map(s => {
+          const vClass  = (s.verdict || 'unknown').toLowerCase();
+          const icon    = s.verdict === 'SAFE' ? '✓' : s.verdict === 'MALICIOUS' ? '✕' : '!';
+          const ts      = new Date(s.timestamp).toLocaleString();
+          const rClass  = (s.risk_level || 'low').toLowerCase();
+          const safeUrl = (s.url || '').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+          return '<div class="history-item" onclick="reloadScan(this.dataset.url)" data-url="' + safeUrl + '">'
+            + '<div class="h-dot ' + vClass + '">' + icon + '</div>'
+            + '<div style="flex:1;min-width:0;">'
+            + '<div class="h-url">' + safeUrl + '</div>'
+            + '<div class="h-meta">' + ts + '</div>'
+            + '</div>'
+            + '<div class="h-risk ' + rClass + '">' + (s.risk_level || '') + '</div>'
+            + '</div>';
+        }).join('');
+      } catch (e) { panel.style.display = 'none'; }
+    }
+
+    function reloadScan(url) {
+      document.getElementById('urlInput').value = url;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scanURL();
+    }
+
+    // Load history on page open
+    loadHistory();
   </script>
 </body>
 
