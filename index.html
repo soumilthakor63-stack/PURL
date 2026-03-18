@@ -1,40 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PURL — Phishing URL Detector</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;700&display=swap"
-    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <style>
-    .history-panel { margin-top: 28px; background: #0a0e13; border: 1px solid #1a2332; border-radius: 10px; overflow: hidden; }
-    .history-header { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-bottom: 1px solid #1a2332; background: #0d1117; }
-    .history-title { font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 2px; color: #00ff41; margin-left: 4px; }
-    .history-count { margin-left: auto; font-size: 11px; color: #444; font-family: 'Share Tech Mono', monospace; }
-    .history-list { max-height: 340px; overflow-y: auto; }
-    .history-list::-webkit-scrollbar { width: 4px; }
-    .history-list::-webkit-scrollbar-track { background: #0d1117; }
-    .history-list::-webkit-scrollbar-thumb { background: #1a2332; border-radius: 2px; }
-    .history-item { display: flex; align-items: center; gap: 14px; padding: 11px 18px; border-bottom: 1px solid #0d1117; cursor: pointer; transition: background .15s; }
-    .history-item:last-child { border-bottom: none; }
-    .history-item:hover { background: #0d1117; }
-    .h-dot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0; }
-    .h-dot.safe      { background:#0d2e16; color:#00ff41; border:1px solid #00ff41; }
-    .h-dot.malicious { background:#2e0d0d; color:#ff4444; border:1px solid #ff4444; }
-    .h-dot.unknown   { background:#1a1a2e; color:#888;    border:1px solid #333; }
-    .h-url { flex:1; min-width:0; font-family:'Share Tech Mono',monospace; font-size:12px; color:#c9d1d9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .h-meta { font-size:10px; color:#444; margin-top:3px; font-family:'Share Tech Mono',monospace; }
-    .h-risk { font-size:11px; font-family:'Share Tech Mono',monospace; flex-shrink:0; }
-    .h-risk.low    { color:#00ff41; }
-    .h-risk.medium { color:#ff9900; }
-    .h-risk.high   { color:#ff4444; }
-    .history-empty { text-align:center; padding:32px; color:#333; font-family:'Share Tech Mono',monospace; font-size:13px; }
+    /* ── Scan History ── */
+    .history-panel{margin-top:28px;background:#0a0e13;border:1px solid #1a2332;border-radius:10px;overflow:hidden}
+    .history-header{display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid #1a2332;background:#0d1117}
+    .history-title{font-family:'Orbitron',monospace;font-size:11px;letter-spacing:2px;color:#00ff41;margin-left:4px}
+    .history-count{margin-left:auto;font-size:11px;color:#444;font-family:'Share Tech Mono',monospace}
+    .history-list{max-height:340px;overflow-y:auto}
+    .history-list::-webkit-scrollbar{width:4px}
+    .history-list::-webkit-scrollbar-track{background:#0d1117}
+    .history-list::-webkit-scrollbar-thumb{background:#1a2332;border-radius:2px}
+    .history-item{display:flex;align-items:center;gap:14px;padding:11px 18px;border-bottom:1px solid #0d1117;cursor:pointer;transition:background .15s}
+    .history-item:last-child{border-bottom:none}
+    .history-item:hover{background:#0d1117}
+    .h-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;flex-shrink:0}
+    .h-dot.safe{background:#0d2e16;color:#00ff41;border:1px solid #00ff41}
+    .h-dot.malicious{background:#2e0d0d;color:#ff4444;border:1px solid #ff4444}
+    .h-dot.suspicious{background:#2e2200;color:#ffcc00;border:1px solid #ffcc00}
+    .h-dot.unknown{background:#1a1a2e;color:#888;border:1px solid #333}
+    .h-url{flex:1;min-width:0;font-family:'Share Tech Mono',monospace;font-size:12px;color:#c9d1d9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .h-meta{font-size:10px;color:#444;margin-top:3px;font-family:'Share Tech Mono',monospace}
+    .h-risk{font-size:11px;font-family:'Share Tech Mono',monospace;flex-shrink:0}
+    .h-risk.low{color:#00ff41}.h-risk.medium{color:#ff9900}.h-risk.high{color:#ff4444}
+    .history-empty{text-align:center;padding:32px;color:#333;font-family:'Share Tech Mono',monospace;font-size:13px}
+
+    /* ── Threat Flags Panel (phishing indicators only) ── */
+    .threat-flags-panel{background:var(--surface);border:1px solid rgba(255,34,51,.35);border-radius:4px;margin-bottom:16px;overflow:hidden;padding:14px 18px;box-shadow:0 0 16px rgba(255,34,51,.06)}
   </style>
 </head>
-
 <body>
 
   <div class="bg-grid"></div>
@@ -50,11 +49,9 @@
       <div class="logo-wrap">
         <div class="logo-hex">
           <svg viewBox="0 0 60 60" width="60" height="60">
-            <polygon points="30,2 55,16 55,44 30,58 5,44 5,16" fill="none" stroke="#00ff41" stroke-width="1.5" />
-            <polygon points="30,8 50,19 50,41 30,52 10,41 10,19" fill="none" stroke="#00ff41" stroke-width="0.5"
-              opacity="0.4" />
-            <text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-family="Orbitron" font-size="14"
-              font-weight="900" fill="#00ff41">P</text>
+            <polygon points="30,2 55,16 55,44 30,58 5,44 5,16" fill="none" stroke="#00ff41" stroke-width="1.5"/>
+            <polygon points="30,8 50,19 50,41 30,52 10,41 10,19" fill="none" stroke="#00ff41" stroke-width="0.5" opacity="0.4"/>
+            <text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-family="Orbitron" font-size="14" font-weight="900" fill="#00ff41">P</text>
           </svg>
         </div>
         <div>
@@ -62,16 +59,12 @@
           <div class="logo-sub">THREAT INTELLIGENCE SYSTEM</div>
         </div>
       </div>
-
       <div class="terminal-line">
         <span class="terminal-prompt">root@purl:~$</span>
         <span class="terminal-cmd" id="termCmd"></span>
         <span class="terminal-cursor">█</span>
       </div>
-
-      <h1>URL <span>THREAT</span><br />ANALYZER</h1>
-
-      <!-- Scrolling ticker replaces static tags -->
+      <h1>URL <span>THREAT</span><br/>ANALYZER</h1>
       <div class="ticker-outer">
         <div class="ticker-fade-left"></div>
         <div class="ticker-fade-right"></div>
@@ -88,7 +81,7 @@
         <span class="panel-status" id="statusLight">● READY</span>
       </div>
       <div class="input-row">
-        <input type="text" id="urlInput" placeholder="paste target url here..." autocomplete="off" spellcheck="false" />
+        <input type="text" id="urlInput" placeholder="paste target url here..." autocomplete="off" spellcheck="false"/>
         <button id="scanBtn" onclick="scanURL()">
           <span id="scanBtnText">SCAN</span>
           <span class="btn-arrow">▶</span>
@@ -107,14 +100,11 @@
         </div>
       </div>
       <div class="scan-steps">
-        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">Submitting to VirusTotal (94
-            engines)</span><span class="step-status pending" id="s1">PENDING</span></div>
-        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">Checking Google Safe
-            Browsing</span><span class="step-status pending" id="s2">PENDING</span></div>
-        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">Running URLScan.io deep
-            analysis</span><span class="step-status pending" id="s3">PENDING</span></div>
-        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">AI threat assessment via
-            Groq</span><span class="step-status pending" id="s4">PENDING</span></div>
+        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">Submitting to VirusTotal (94 engines)</span><span class="step-status pending" id="s1">PENDING</span></div>
+        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">Checking Google Safe Browsing</span><span class="step-status pending" id="s2">PENDING</span></div>
+        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">Running URLScan.io deep analysis</span><span class="step-status pending" id="s3">PENDING</span></div>
+        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">AI threat assessment via Groq</span><span class="step-status pending" id="s4">PENDING</span></div>
+        <div class="scan-step"><span class="step-icon">⬡</span><span class="step-text">Gemini Vision visual phishing check</span><span class="step-status pending" id="s5">PENDING</span></div>
       </div>
     </div>
 
@@ -138,9 +128,7 @@
         </div>
         <div class="verdict-right">
           <div class="risk-label" id="riskLabel"></div>
-          <div class="risk-bar-wrap">
-            <div class="risk-bar" id="riskBar"></div>
-          </div>
+          <div class="risk-bar-wrap"><div class="risk-bar" id="riskBar"></div></div>
           <div class="risk-sublabel">THREAT LEVEL</div>
         </div>
       </div>
@@ -155,35 +143,37 @@
           <div class="stat-icon-big">🛡</div>
           <div class="stat-num" id="statHarmless">0</div>
           <div class="stat-name">HARMLESS</div>
-          <div class="stat-bar">
-            <div class="stat-fill harmless" id="barHarmless"></div>
-          </div>
+          <div class="stat-bar"><div class="stat-fill harmless" id="barHarmless"></div></div>
         </div>
         <div class="stat-card malicious">
           <div class="stat-icon-big">☠</div>
           <div class="stat-num" id="statMalicious">0</div>
           <div class="stat-name">MALICIOUS</div>
-          <div class="stat-bar">
-            <div class="stat-fill malicious" id="barMalicious"></div>
-          </div>
+          <div class="stat-bar"><div class="stat-fill malicious" id="barMalicious"></div></div>
         </div>
         <div class="stat-card suspicious">
           <div class="stat-icon-big">⚡</div>
           <div class="stat-num" id="statSuspicious">0</div>
           <div class="stat-name">SUSPICIOUS</div>
-          <div class="stat-bar">
-            <div class="stat-fill suspicious" id="barSuspicious"></div>
-          </div>
+          <div class="stat-bar"><div class="stat-fill suspicious" id="barSuspicious"></div></div>
         </div>
         <div class="stat-card undetected">
           <div class="stat-icon-big">◌</div>
           <div class="stat-num" id="statUndetected">0</div>
           <div class="stat-name">UNDETECTED</div>
-          <div class="stat-bar">
-            <div class="stat-fill undetected" id="barUndetected"></div>
-          </div>
+          <div class="stat-bar"><div class="stat-fill undetected" id="barUndetected"></div></div>
         </div>
       </div>
+
+      <!-- ══ THREAT INDICATORS (URL + Gemini flags) ═══════════════ -->
+      <div class="threat-flags-panel" id="threatFlagsPanel" style="display:none">
+        <div class="info-header">
+          <span class="info-tag" style="background:rgba(255,34,51,.1);border-color:var(--red);color:var(--red);">THREAT FLAGS</span>
+          <span class="info-title">◈ PHISHING INDICATORS DETECTED</span>
+        </div>
+        <ul class="gemini-indicators-list" id="geminiIndicators" style="padding:0 0 4px 0;margin-top:4px"></ul>
+      </div>
+      <!-- ══════════════════════════════════════════════════════════ -->
 
       <div class="info-panel" id="screenshotBox" style="display:none">
         <div class="info-header">
@@ -194,7 +184,7 @@
           <div class="screenshot-loading" id="screenshotLoading">
             <div class="mini-spinner"></div><span>Fetching screenshot...</span>
           </div>
-          <img class="screenshot-img" id="screenshotImg" style="display:none" alt="Website Screenshot" />
+          <img class="screenshot-img" id="screenshotImg" style="display:none" alt="Website Screenshot"/>
         </div>
       </div>
 
@@ -209,8 +199,7 @@
 
       <div class="meta-strip">
         <div class="meta-item"><span class="meta-key">ENGINES</span><span class="meta-val" id="scannedBy">—</span></div>
-        <div class="meta-item"><span class="meta-key">SCAN TIME</span><span class="meta-val" id="scanTime">—</span>
-        </div>
+        <div class="meta-item"><span class="meta-key">SCAN TIME</span><span class="meta-val" id="scanTime">—</span></div>
         <div class="meta-item"><span class="meta-key">STATUS</span><span class="meta-val green">COMPLETE</span></div>
       </div>
 
@@ -220,7 +209,7 @@
 
     </div>
 
-    <!-- ── SCAN HISTORY ──────────────────────────────────────────────────── -->
+    <!-- ══ SCAN HISTORY ══════════════════════════════════════════ -->
     <div class="history-panel" id="historyPanel" style="display:none;">
       <div class="history-header">
         <span class="panel-dot red"></span>
@@ -242,232 +231,312 @@
       <div class="credit-version">PURL v1.0 &nbsp;·&nbsp; PHISHING URL DETECTION SYSTEM</div>
     </footer>
 
-  </div>
+  </div><!-- /container -->
 
   <script>
-    // ── User identity ─────────────────────────────────────────────
-    function getUserId() {
-      let id = localStorage.getItem('purl_user_id');
-      if (!id) {
-        id = 'u_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
-        localStorage.setItem('purl_user_id', id);
-      }
-      return id;
+  // ── User identity ──────────────────────────────────────────────────────────
+  function getUserId() {
+    let id = localStorage.getItem('purl_user_id');
+    if (!id) {
+      id = 'u_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9);
+      localStorage.setItem('purl_user_id', id);
     }
-    const USER_ID = getUserId();
+    return id;
+  }
+  const USER_ID = getUserId();
 
-    // ── Glitch scramble terminal ──
-    const GLITCH_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*/<>[]{}';
-    const termMsgs = [
-      'initialize_scan_engine --deep',
-      'load_threat_database --sources=4',
-      'run_heuristic_analysis --deep',
-      'await_target_url...',
-      'check_blacklist --engines=94',
-      'ai_assessment --model=llama',
+  // ── Glitch terminal ────────────────────────────────────────────────────────
+  const GLITCH_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*/<>[]{}';
+  const termMsgs = [
+    'initialize_scan_engine --deep',
+    'load_threat_database --sources=5',
+    'run_heuristic_analysis --deep',
+    'await_target_url...',
+    'check_blacklist --engines=94',
+    'ai_assessment --model=llama',
+    'gemini_vision --screenshot=true',
+  ];
+  let termIdx = 0;
+  const termEl = document.getElementById('termCmd');
+
+  function glitchScramble(target, onDone) {
+    let iter = 0;
+    const max = target.length * 3.2;
+    const iv = setInterval(() => {
+      termEl.textContent = target.split('').map((ch, i) => {
+        if (i < iter / 3.2) return ch;
+        return ch === ' ' ? ' ' : GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)];
+      }).join('');
+      iter++;
+      if (iter > max) { clearInterval(iv); termEl.textContent = target; if (onDone) onDone(); }
+    }, 32);
+  }
+  function cycleGlitch() {
+    glitchScramble(termMsgs[termIdx], () => {
+      termIdx = (termIdx + 1) % termMsgs.length;
+      setTimeout(cycleGlitch, 2600);
+    });
+  }
+  setTimeout(cycleGlitch, 600);
+
+  // ── Scrolling ticker ───────────────────────────────────────────────────────
+  const tickItems = [
+    { cls: 'ticker-green',  txt: '● VT: 94 ENGINES' },
+    { cls: 'ticker-muted',  txt: '◆ GOOGLE SB: OK' },
+    { cls: 'ticker-cyan',   txt: '◈ URLSCAN: READY' },
+    { cls: 'ticker-green',  txt: '● GROQ AI: ONLINE' },
+    { cls: 'ticker-yellow', txt: '⚡ THREAT DB: LIVE' },
+    { cls: 'ticker-cyan',   txt: '◈ GEMINI VISION: ON' },
+    { cls: 'ticker-muted',  txt: '◆ LATENCY: 38MS' },
+    { cls: 'ticker-green',  txt: '● STATUS: NOMINAL' },
+  ];
+  const track = document.getElementById('tickerTrack');
+  if (track) {
+    [...tickItems, ...tickItems].forEach(t => {
+      const span = document.createElement('span');
+      span.className = 'ticker-item ' + t.cls;
+      span.textContent = t.txt;
+      track.appendChild(span);
+      const sep = document.createElement('span');
+      sep.className = 'ticker-sep';
+      sep.textContent = ' ◆ ';
+      track.appendChild(sep);
+    });
+  }
+
+  // ── Step animation ─────────────────────────────────────────────────────────
+  let stepTimers = [];
+  function startStepAnimation() {
+    const steps = [
+      { id: 's1', delay: 800   },
+      { id: 's2', delay: 3500  },
+      { id: 's3', delay: 7000  },
+      { id: 's4', delay: 13000 },
+      { id: 's5', delay: 18000 },
     ];
-    let termIdx = 0;
-    const termEl = document.getElementById('termCmd');
-
-    function glitchScramble(target, onDone) {
-      let iter = 0;
-      const max = target.length * 3.2;
-      const iv = setInterval(() => {
-        termEl.textContent = target.split('').map((ch, i) => {
-          if (i < iter / 3.2) return ch;
-          return ch === ' ' ? ' ' : GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)];
-        }).join('');
-        iter++;
-        if (iter > max) {
-          clearInterval(iv);
-          termEl.textContent = target;
-          if (onDone) onDone();
+    steps.forEach(s => {
+      const el = document.getElementById(s.id);
+      el.className = 'step-status pending';
+      el.textContent = 'PENDING';
+    });
+    steps.forEach((s, i) => {
+      const t = setTimeout(() => {
+        document.getElementById(s.id).className = 'step-status running';
+        document.getElementById(s.id).textContent = 'SCANNING';
+        if (i > 0) {
+          document.getElementById(steps[i-1].id).className = 'step-status done';
+          document.getElementById(steps[i-1].id).textContent = 'DONE ✓';
         }
-      }, 32);
-    }
+      }, s.delay);
+      stepTimers.push(t);
+    });
+  }
+  function clearStepTimers() {
+    stepTimers.forEach(t => clearTimeout(t));
+    stepTimers = [];
+    ['s1','s2','s3','s4','s5'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.className = 'step-status done'; el.textContent = 'DONE ✓'; }
+    });
+  }
 
-    function cycleGlitch() {
-      glitchScramble(termMsgs[termIdx], () => {
-        termIdx = (termIdx + 1) % termMsgs.length;
-        setTimeout(cycleGlitch, 2600);
+  // ── Scan ───────────────────────────────────────────────────────────────────
+  async function scanURL() {
+    const input = document.getElementById('urlInput');
+    const url = input.value.trim();
+    if (!url) { showError('Please enter a URL to scan.'); return; }
+    setLoading(true);
+    hideAll();
+    startStepAnimation();
+    try {
+      const res = await fetch('/webhook/url-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, user_id: USER_ID })
       });
+      if (!res.ok) throw new Error('Server error: ' + res.status);
+      const data = await res.json();
+      const d = Array.isArray(data) ? data[0] : data;
+      clearStepTimers();
+      showResult(d);
+      loadHistory();
+    } catch (err) {
+      clearStepTimers();
+      showError('Could not connect to scanner. Make sure n8n is running and the workflow is active.');
+    } finally {
+      setLoading(false);
     }
-    setTimeout(cycleGlitch, 600);
+  }
 
-    // ── Scrolling ticker ──
-    const tickItems = [
-      { cls: 'ticker-green',  txt: '● VT: 94 ENGINES' },
-      { cls: 'ticker-muted',  txt: '◆ GOOGLE SB: OK' },
-      { cls: 'ticker-cyan',   txt: '◈ URLSCAN: READY' },
-      { cls: 'ticker-green',  txt: '● GROQ AI: ONLINE' },
-      { cls: 'ticker-yellow', txt: '⚡ THREAT DB: LIVE' },
-      { cls: 'ticker-muted',  txt: '◆ LATENCY: 38MS' },
-      { cls: 'ticker-cyan',   txt: '◈ DEEP SCAN: ON' },
-      { cls: 'ticker-green',  txt: '● STATUS: NOMINAL' },
-    ];
-    const track = document.getElementById('tickerTrack');
-    if (track) {
-      [...tickItems, ...tickItems].forEach(t => {
-        const span = document.createElement('span');
-        span.className = 'ticker-item ' + t.cls;
-        span.textContent = t.txt;
-        track.appendChild(span);
-        const sep = document.createElement('span');
-        sep.className = 'ticker-sep';
-        sep.textContent = ' ◆ ';
-        track.appendChild(sep);
-      });
-    }
+  // ── showResult ─────────────────────────────────────────────────────────────
+  function showResult(data) {
+    const verdict = (data.verdict || 'UNKNOWN').toUpperCase();
+    const risk    = (data.risk_level || 'low').toLowerCase();
+    const stats   = data.stats || {};
+    const total   = (stats.harmless||0)+(stats.malicious||0)+(stats.suspicious||0)+(stats.undetected||0);
 
-    let stepTimers = [];
-    function startStepAnimation() {
-      const steps = [{ id: 's1', delay: 800 }, { id: 's2', delay: 3500 }, { id: 's3', delay: 7000 }, { id: 's4', delay: 13000 }];
-      steps.forEach(s => { const el = document.getElementById(s.id); el.className = 'step-status pending'; el.textContent = 'PENDING'; });
-      steps.forEach((s, i) => {
-        const t = setTimeout(() => {
-          document.getElementById(s.id).className = 'step-status running';
-          document.getElementById(s.id).textContent = 'SCANNING';
-          if (i > 0) { document.getElementById(steps[i - 1].id).className = 'step-status done'; document.getElementById(steps[i - 1].id).textContent = 'DONE ✓'; }
-        }, s.delay);
-        stepTimers.push(t);
-      });
-    }
+    // verdict banner
+    document.getElementById('verdictBanner').className      = 'verdict-banner ' + verdict.toLowerCase();
+    document.getElementById('verdictIcon').textContent       = verdict==='SAFE'?'✓':verdict==='MALICIOUS'?'✕':'!';
+    document.getElementById('verdictTitle').textContent      = verdict;
 
-    function clearStepTimers() {
-      stepTimers.forEach(t => clearTimeout(t));
-      stepTimers = [];
-      ['s1', 's2', 's3', 's4'].forEach(id => { const el = document.getElementById(id); if (el) { el.className = 'step-status done'; el.textContent = 'DONE ✓'; } });
-    }
+    // risk bar
+    const riskPct = risk==='low'?15:risk==='medium'?55:95;
+    document.getElementById('riskBar').style.width           = riskPct + '%';
+    document.getElementById('riskBar').className             = 'risk-bar ' + risk;
+    document.getElementById('riskLabel').textContent         = risk.toUpperCase();
+    document.getElementById('riskLabel').className           = 'risk-label ' + risk;
 
-    async function scanURL() {
-      const input = document.getElementById('urlInput');
-      const url = input.value.trim();
-      if (!url) { showError('Please enter a URL to scan.'); return; }
-      setLoading(true); hideAll(); startStepAnimation();
-      try {
-        const res = await fetch('/webhook/url-check', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: url, user_id: USER_ID })
-        });
-        if (!res.ok) throw new Error('Server error: ' + res.status);
-        const data = await res.json();
-        const d = Array.isArray(data) ? data[0] : data;
-        clearStepTimers();
-        showResult(d);
-        loadHistory();
-      } catch (err) {
-        clearStepTimers();
-        showError('Could not connect to scanner. Make sure n8n is running and the workflow is active.');
-      } finally { setLoading(false); }
+    // URL
+    document.getElementById('verdictUrl').textContent        = data.url || '';
+
+    // stats
+    [['statHarmless','barHarmless',stats.harmless||0],
+     ['statMalicious','barMalicious',stats.malicious||0],
+     ['statSuspicious','barSuspicious',stats.suspicious||0],
+     ['statUndetected','barUndetected',stats.undetected||0]
+    ].forEach(([sid,bid,val]) => {
+      animateNumber(sid, val);
+      setTimeout(() => { document.getElementById(bid).style.width = (total>0?val/total*100:0)+'%'; }, 400);
+    });
+
+    // Gemini Vision panel
+    renderGeminiPanel(data);
+
+    // screenshot
+    if (data.screenshot) {
+      const box = document.getElementById('screenshotBox');
+      const img = document.getElementById('screenshotImg');
+      const loading = document.getElementById('screenshotLoading');
+      box.style.display = 'block';
+      setTimeout(() => {
+        img.src = data.screenshot;
+        img.onload  = () => { loading.style.display='none'; img.style.display='block'; };
+        img.onerror = () => { loading.innerHTML='<span>⚠ Screenshot not ready. Rescan in 30s.</span>'; };
+      }, 3000);
     }
 
-    function showResult(data) {
-      const verdict = data.verdict || 'UNKNOWN';
-      const risk = (data.risk_level || 'LOW').toLowerCase();
-      const stats = data.stats || {};
-      const total = (stats.harmless || 0) + (stats.malicious || 0) + (stats.suspicious || 0) + (stats.undetected || 0);
+    // Groq AI typing
+    const aiEl = document.getElementById('aiText');
+    const aiTxt = data.ai_analysis || 'No analysis available.';
+    aiEl.textContent = '';
+    let i = 0;
+    const typeTimer = setInterval(() => {
+      aiEl.textContent += aiTxt[i]; i++;
+      if (i >= aiTxt.length) clearInterval(typeTimer);
+    }, 16);
 
-      document.getElementById('verdictBanner').className = 'verdict-banner ' + verdict.toLowerCase();
-      document.getElementById('verdictIcon').textContent = verdict === 'SAFE' ? '✓' : verdict === 'MALICIOUS' ? '✕' : '!';
-      document.getElementById('verdictTitle').textContent = verdict;
+    document.getElementById('scannedBy').textContent = 'VirusTotal + Google SB + URLScan + Gemini Vision';
+    document.getElementById('scanTime').textContent  = new Date().toLocaleTimeString();
+    document.getElementById('result').classList.add('active');
+  }
 
-      const riskPct = risk === 'low' ? 15 : risk === 'medium' ? 55 : 95;
-      document.getElementById('riskBar').style.width = riskPct + '%';
-      document.getElementById('riskBar').className = 'risk-bar ' + risk;
-      document.getElementById('riskLabel').textContent = risk.toUpperCase();
-      document.getElementById('riskLabel').className = 'risk-label ' + risk;
+  // ── renderGeminiPanel — shows only threat indicators, no verdict panel ────
+  function renderGeminiPanel(data) {
+    const gIndicators = data.gemini_indicators || [];
+    const panel = document.getElementById('threatFlagsPanel');
+    const list  = document.getElementById('geminiIndicators');
 
-      document.getElementById('verdictUrl').textContent = data.url || '';
-
-      [['statHarmless', 'barHarmless', stats.harmless || 0], ['statMalicious', 'barMalicious', stats.malicious || 0],
-      ['statSuspicious', 'barSuspicious', stats.suspicious || 0], ['statUndetected', 'barUndetected', stats.undetected || 0]].forEach(([sid, bid, val]) => {
-        animateNumber(sid, val);
-        setTimeout(() => { document.getElementById(bid).style.width = (total > 0 ? val / total * 100 : 0) + '%'; }, 400);
-      });
-
-      if (data.screenshot) {
-        const box = document.getElementById('screenshotBox');
-        const img = document.getElementById('screenshotImg');
-        const loading = document.getElementById('screenshotLoading');
-        box.style.display = 'block';
-        setTimeout(() => {
-          img.src = data.screenshot;
-          img.onload = () => { loading.style.display = 'none'; img.style.display = 'block'; };
-          img.onerror = () => { loading.innerHTML = '<span>⚠ Screenshot not ready. Rescan in 30s.</span>'; };
-        }, 3000);
-      }
-
-      const aiEl = document.getElementById('aiText');
-      const aiText = data.ai_analysis || 'No analysis available.';
-      aiEl.textContent = ''; let i = 0;
-      const typeTimer = setInterval(() => { aiEl.textContent += aiText[i]; i++; if (i >= aiText.length) clearInterval(typeTimer); }, 16);
-
-      document.getElementById('scannedBy').textContent = 'VirusTotal + Google SB + URLScan';
-      document.getElementById('scanTime').textContent = new Date().toLocaleTimeString();
-      document.getElementById('result').classList.add('active');
+    if (gIndicators.length > 0) {
+      // Show the flags panel
+      panel.style.display = 'block';
+      list.innerHTML = gIndicators.map(ind =>
+        '<li class="gemini-indicator" style="margin-bottom:5px">⚑ ' + ind + '</li>'
+      ).join('');
+    } else {
+      // No flags — hide the panel completely
+      panel.style.display = 'none';
     }
+  }
 
-    function animateNumber(id, target) {
-      const el = document.getElementById(id); let current = 0;
-      const step = Math.max(1, Math.ceil(target / 40));
-      const timer = setInterval(() => { current = Math.min(current + step, target); el.textContent = current; if (current >= target) clearInterval(timer); }, 25);
-    }
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function animateNumber(id, target) {
+    const el = document.getElementById(id);
+    let current = 0;
+    const step = Math.max(1, Math.ceil(target/40));
+    const timer = setInterval(() => {
+      current = Math.min(current+step, target);
+      el.textContent = current;
+      if (current >= target) clearInterval(timer);
+    }, 25);
+  }
 
-    function showError(msg) { document.getElementById('errorText').textContent = msg; document.getElementById('error').classList.add('active'); }
-    function setLoading(state) {
-      document.getElementById('loading').classList.toggle('active', state);
-      document.getElementById('scanBtn').disabled = state;
-      document.getElementById('scanBtnText').textContent = state ? 'SCANNING' : 'SCAN';
-      document.getElementById('statusLight').textContent = state ? '● SCANNING' : '● READY';
-      document.getElementById('statusLight').className = state ? 'panel-status scanning' : 'panel-status';
-    }
-    function hideAll() {
-      document.getElementById('result').classList.remove('active');
-      document.getElementById('error').classList.remove('active');
-      document.getElementById('screenshotBox').style.display = 'none';
-      document.getElementById('screenshotImg').style.display = 'none';
-      document.getElementById('screenshotLoading').style.display = 'flex';
-    }
-    function resetForm() { hideAll(); document.getElementById('urlInput').value = ''; document.getElementById('urlInput').focus(); }
-    document.getElementById('urlInput').addEventListener('keydown', e => { if (e.key === 'Enter') scanURL(); });
-    // ── History ───────────────────────────────────────────────────────────
-    async function loadHistory() {
-      const panel = document.getElementById('historyPanel');
-      const list  = document.getElementById('historyList');
-      try {
-        const res  = await fetch('/history?user_id=' + encodeURIComponent(USER_ID));
-        const data = await res.json();
-        if (!Array.isArray(data) || data.length === 0) { panel.style.display = 'none'; return; }
-        panel.style.display = 'block';
-        document.getElementById('historyCount').textContent = data.length + (data.length !== 1 ? ' scans' : ' scan');
-        list.innerHTML = data.map(s => {
-          const vClass  = (s.verdict || 'unknown').toLowerCase();
-          const icon    = s.verdict === 'SAFE' ? '✓' : s.verdict === 'MALICIOUS' ? '✕' : '!';
-          const ts      = new Date(s.timestamp).toLocaleString();
-          const rClass  = (s.risk_level || 'low').toLowerCase();
-          const safeUrl = (s.url || '').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-          return '<div class="history-item" onclick="reloadScan(this.dataset.url)" data-url="' + safeUrl + '">'
-            + '<div class="h-dot ' + vClass + '">' + icon + '</div>'
-            + '<div style="flex:1;min-width:0;">'
-            + '<div class="h-url">' + safeUrl + '</div>'
-            + '<div class="h-meta">' + ts + '</div>'
-            + '</div>'
-            + '<div class="h-risk ' + rClass + '">' + (s.risk_level || '') + '</div>'
-            + '</div>';
-        }).join('');
-      } catch (e) { panel.style.display = 'none'; }
-    }
+  function showError(msg) {
+    document.getElementById('errorText').textContent = msg;
+    document.getElementById('error').classList.add('active');
+  }
 
-    function reloadScan(url) {
-      document.getElementById('urlInput').value = url;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      scanURL();
-    }
+  function setLoading(state) {
+    document.getElementById('loading').classList.toggle('active', state);
+    document.getElementById('scanBtn').disabled        = state;
+    document.getElementById('scanBtnText').textContent = state ? 'SCANNING' : 'SCAN';
+    document.getElementById('statusLight').textContent = state ? '● SCANNING' : '● READY';
+    document.getElementById('statusLight').className   = state ? 'panel-status scanning' : 'panel-status';
+  }
 
-    // Load history on page open
-    loadHistory();
+  function hideAll() {
+    document.getElementById('result').classList.remove('active');
+    document.getElementById('error').classList.remove('active');
+    document.getElementById('screenshotBox').style.display     = 'none';
+    document.getElementById('screenshotImg').style.display     = 'none';
+    document.getElementById('screenshotLoading').style.display = 'flex';
+    // reset threat flags panel
+    document.getElementById('threatFlagsPanel').style.display  = 'none';
+    document.getElementById('geminiIndicators').innerHTML      = '';
+  }
+
+  function resetForm() {
+    hideAll();
+    document.getElementById('urlInput').value = '';
+    document.getElementById('urlInput').focus();
+  }
+
+  document.getElementById('urlInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') scanURL();
+  });
+
+  // ── History ────────────────────────────────────────────────────────────────
+  async function loadHistory() {
+    const panel = document.getElementById('historyPanel');
+    const list  = document.getElementById('historyList');
+    try {
+      const res  = await fetch('/history?user_id=' + encodeURIComponent(USER_ID));
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) { panel.style.display='none'; return; }
+      panel.style.display = 'block';
+      document.getElementById('historyCount').textContent = data.length + (data.length!==1?' scans':' scan');
+      list.innerHTML = data.map(s => {
+        const vClass  = (s.verdict||'unknown').toLowerCase();
+        const icon    = s.verdict==='SAFE'?'✓':s.verdict==='MALICIOUS'?'✕':'!';
+        const ts      = new Date(s.timestamp).toLocaleString();
+        // Risk class based on FINAL verdict — MALICIOUS always shows HIGH (red)
+        const finalV  = (s.verdict||'UNKNOWN').toUpperCase();
+        const rClass  = finalV==='MALICIOUS' ? 'high'
+                      : finalV==='SUSPICIOUS'? 'medium'
+                      : (s.risk_level||'low').toLowerCase();
+        const rLabel  = finalV==='MALICIOUS' ? 'HIGH'
+                      : finalV==='SUSPICIOUS'? 'MEDIUM'
+                      : (s.risk_level||'low').toUpperCase();
+        const safeUrl = (s.url||'').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        return '<div class="history-item" onclick="reloadScan(this.dataset.url)" data-url="'+safeUrl+'">'
+          +'<div class="h-dot '+vClass+'">'+icon+'</div>'
+          +'<div style="flex:1;min-width:0">'
+          +'<div class="h-url">'+safeUrl+'</div>'
+          +'<div class="h-meta">'+ts+'</div>'
+          +'</div>'
+          +'<div class="h-risk '+rClass+'">'+rLabel+'</div>'
+          +'</div>';
+      }).join('');
+    } catch(e) { panel.style.display='none'; }
+  }
+
+  function reloadScan(url) {
+    document.getElementById('urlInput').value = url;
+    window.scrollTo({ top:0, behavior:'smooth' });
+    scanURL();
+  }
+
+  loadHistory();
   </script>
 </body>
-
 </html>
