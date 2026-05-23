@@ -165,6 +165,17 @@
         </div>
       </div>
 
+      <!-- ══ GEMINI SAFETY ASSESSMENT ══════════════════════════════ -->
+      <div class="info-panel" id="geminiAssessmentPanel" style="display:none">
+        <div class="info-header">
+          <span class="info-tag" style="background:rgba(0,212,255,.08);border-color:#00d4ff;color:#00d4ff;">GEMINI AI</span>
+          <span class="info-title">◈ IS THIS SAFE TO VISIT?</span>
+          <span class="ai-model-badge">Gemini 2.0 Flash</span>
+        </div>
+        <div class="ai-typing" id="geminiAnalysisText" style="margin-bottom:12px"></div>
+        <div id="geminiRecommendationBox" style="display:none;margin-top:8px;padding:10px 14px;border-radius:4px;font-family:var(--font-mono);font-size:12px;letter-spacing:.5px"></div>
+
+      </div>
       <!-- ══ THREAT INDICATORS (URL + Gemini flags) ═══════════════ -->
       <div class="threat-flags-panel" id="threatFlagsPanel" style="display:none">
         <div class="info-header">
@@ -188,11 +199,12 @@
         </div>
       </div>
 
+
       <div class="info-panel ai-panel">
         <div class="info-header">
           <span class="info-tag groq">GROQ AI</span>
           <span class="info-title">◈ THREAT INTELLIGENCE REPORT</span>
-          <span class="ai-model-badge">LLaMA 3.1</span>
+          <span class="ai-model-badge">LLaMA 3.3</span>
         </div>
         <div class="ai-typing" id="aiText"></div>
       </div>
@@ -416,14 +428,15 @@
       }, 3000);
     }
 
-    // Groq AI typing
+
+    // Groq AI typing animation
     const aiEl = document.getElementById('aiText');
-    const aiTxt = data.ai_analysis || 'No analysis available.';
+    const aiTxt = data.groq_analysis || data.ai_analysis || 'No analysis available.';
     aiEl.textContent = '';
-    let i = 0;
-    const typeTimer = setInterval(() => {
-      aiEl.textContent += aiTxt[i]; i++;
-      if (i >= aiTxt.length) clearInterval(typeTimer);
+    let ai_i = 0;
+    const aiTypeTimer = setInterval(() => {
+      aiEl.textContent += aiTxt[ai_i]; ai_i++;
+      if (ai_i >= aiTxt.length) clearInterval(aiTypeTimer);
     }, 16);
 
     document.getElementById('scannedBy').textContent = 'VirusTotal + Google SB + URLScan + Gemini Vision';
@@ -431,20 +444,66 @@
     document.getElementById('result').classList.add('active');
   }
 
-  // ── renderGeminiPanel — shows only threat indicators, no verdict panel ────
+  // ── renderGeminiPanel ─────────────────────────────────────────────────────
   function renderGeminiPanel(data) {
-    const gIndicators = data.gemini_indicators || [];
+    const gIndicators      = data.gemini_indicators      || [];
+    const gAnalysis        = data.gemini_analysis        || '';
+    const gVerdict         = (data.gemini_verdict        || 'UNKNOWN').toUpperCase();
+    const gRecommendation  = data.gemini_recommendation  || '';
+    const gBrand           = data.gemini_brand           || null;
+
+    // ── Gemini Assessment Panel (summary + recommendation) ────────
+    const assessPanel = document.getElementById('geminiAssessmentPanel');
+    const analysisEl  = document.getElementById('geminiAnalysisText');
+    const recBox      = document.getElementById('geminiRecommendationBox');
+
+    if (gAnalysis && gAnalysis !== 'Gemini analysis unavailable.' && gAnalysis !== 'Gemini API call failed.' && gAnalysis !== 'Gemini analysis timed out.') {
+      assessPanel.style.display = 'block';
+
+      // Typing animation for Gemini analysis text
+      analysisEl.textContent = '';
+      let i = 0;
+      const txt = (gBrand ? '⚠ Impersonating ' + gBrand + ': ' : '') + gAnalysis;
+      const timer = setInterval(() => {
+        analysisEl.textContent += txt[i]; i++;
+        if (i >= txt.length) clearInterval(timer);
+      }, 14);
+
+      // Recommendation box
+      if (gRecommendation) {
+        recBox.style.display = 'block';
+        recBox.textContent   = '▶ ' + gRecommendation;
+        // Color based on verdict
+        if (gVerdict === 'MALICIOUS') {
+          recBox.style.background = 'rgba(255,34,51,0.1)';
+          recBox.style.border     = '1px solid rgba(255,34,51,0.4)';
+          recBox.style.color      = '#ff2233';
+        } else if (gVerdict === 'SUSPICIOUS') {
+          recBox.style.background = 'rgba(255,204,0,0.08)';
+          recBox.style.border     = '1px solid rgba(255,204,0,0.4)';
+          recBox.style.color      = '#ffcc00';
+        } else {
+          recBox.style.background = 'rgba(0,255,65,0.06)';
+          recBox.style.border     = '1px solid rgba(0,255,65,0.3)';
+          recBox.style.color      = '#00ff41';
+        }
+      } else {
+        recBox.style.display = 'none';
+      }
+    } else {
+      assessPanel.style.display = 'none';
+    }
+
+    // ── Threat Flags Panel (indicators list) ──────────────────────
     const panel = document.getElementById('threatFlagsPanel');
     const list  = document.getElementById('geminiIndicators');
 
     if (gIndicators.length > 0) {
-      // Show the flags panel
       panel.style.display = 'block';
       list.innerHTML = gIndicators.map(ind =>
         '<li class="gemini-indicator" style="margin-bottom:5px">⚑ ' + ind + '</li>'
       ).join('');
     } else {
-      // No flags — hide the panel completely
       panel.style.display = 'none';
     }
   }
@@ -481,8 +540,12 @@
     document.getElementById('screenshotImg').style.display     = 'none';
     document.getElementById('screenshotLoading').style.display = 'flex';
     // reset threat flags panel
-    document.getElementById('threatFlagsPanel').style.display  = 'none';
-    document.getElementById('geminiIndicators').innerHTML      = '';
+    document.getElementById('threatFlagsPanel').style.display      = 'none';
+    document.getElementById('geminiIndicators').innerHTML          = '';
+    document.getElementById('geminiAssessmentPanel').style.display = 'none';
+    document.getElementById('geminiAnalysisText').textContent      = '';
+    document.getElementById('geminiRecommendationBox').style.display = 'none';
+    document.getElementById('aiText').textContent = '';
   }
 
   function resetForm() {
@@ -509,14 +572,16 @@
         const vClass  = (s.verdict||'unknown').toLowerCase();
         const icon    = s.verdict==='SAFE'?'✓':s.verdict==='MALICIOUS'?'✕':'!';
         const ts      = new Date(s.timestamp).toLocaleString();
-        // Risk class based on FINAL verdict — MALICIOUS always shows HIGH (red)
+        // Use verdict to determine risk — SAFE always shows LOW (green)
         const finalV  = (s.verdict||'UNKNOWN').toUpperCase();
-        const rClass  = finalV==='MALICIOUS' ? 'high'
-                      : finalV==='SUSPICIOUS'? 'medium'
-                      : (s.risk_level||'low').toLowerCase();
-        const rLabel  = finalV==='MALICIOUS' ? 'HIGH'
-                      : finalV==='SUSPICIOUS'? 'MEDIUM'
-                      : (s.risk_level||'low').toUpperCase();
+        const rClass  = finalV==='SAFE'       ? 'low'
+                      : finalV==='MALICIOUS'  ? 'high'
+                      : finalV==='SUSPICIOUS' ? 'medium'
+                      : 'low';
+        const rLabel  = finalV==='SAFE'       ? 'LOW'
+                      : finalV==='MALICIOUS'  ? 'HIGH'
+                      : finalV==='SUSPICIOUS' ? 'MEDIUM'
+                      : 'LOW';
         const safeUrl = (s.url||'').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         return '<div class="history-item" onclick="reloadScan(this.dataset.url)" data-url="'+safeUrl+'">'
           +'<div class="h-dot '+vClass+'">'+icon+'</div>'
