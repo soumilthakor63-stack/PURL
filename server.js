@@ -655,16 +655,19 @@ app.post('/webhook/url-check', async (req, res) => {
   const urlRegex = new RegExp('^' + norm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
 
   // Step 1: Instant URL analysis
-  const { urlFlags, urlVerdict, detectedBrand } = analyzeURL(url);
+  let { urlFlags, urlVerdict, detectedBrand } = analyzeURL(url);
 
   // Step 1b: Page title mismatch check (runs after n8n returns)
   // This is handled inside the n8n result processing below
 
   // Step 2: Forward to n8n
   const payload = JSON.stringify({ url });
+  const n8nBase = process.env.N8N_URL || 'http://localhost:5678';
+  const n8nUrl = new URL(n8nBase);
+  const n8nIsHttps = n8nUrl.protocol === 'https:';
   const options = {
-    hostname: 'localhost',
-    port: 5678,
+    hostname: n8nUrl.hostname,
+    port: n8nUrl.port || (n8nIsHttps ? 443 : 80),
     path: '/webhook/url-check',
     method: 'POST',
     timeout: 120000,
@@ -674,7 +677,8 @@ app.post('/webhook/url-check', async (req, res) => {
     }
   };
 
-  const proxyReq = http.request(options, (proxyRes) => {
+  const proxyLib = n8nIsHttps ? https : http;
+  const proxyReq = proxyLib.request(options, (proxyRes) => {
     let body = '';
     proxyRes.on('data', chunk => body += chunk);
     proxyRes.on('end', async () => {
@@ -909,4 +913,5 @@ app.delete('/admin/users/:uid/scans', adminAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.listen(3000, () => console.log('🚀  PURL running at http://localhost:3000'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log('🚀  PURL running on port ' + PORT));
